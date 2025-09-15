@@ -86,3 +86,24 @@ export type InvoiceForm = {
     amount: number;
     status: 'pending' | 'paid';
 };
+
+
+export type VideoGrid = {
+    id: string;  // id
+    title: string; // 标题
+    rating: Rating; // 评分
+    pic: string; // 图片
+    is_new: boolean; // 是否新上映
+    date: string; // 日期
+    uri: string; // 豆瓣地址
+    episodes_info: string; // 更新集数
+    card_subtitle: string; // 副标题
+    type: string; // 类型 tv/movie/等
+};
+
+export type Rating = {
+    count: number;
+    max: number;
+    start_count: number;
+    value: number;
+}
