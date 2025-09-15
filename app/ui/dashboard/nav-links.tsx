@@ -3,6 +3,7 @@ import {DocumentDuplicateIcon, HomeIcon, UserGroupIcon,} from '@heroicons/react/
 import Link from 'next/link';
 import {usePathname} from 'next/navigation';
 import clsx from 'clsx';
+import {VideoCameraIcon} from "@heroicons/react/16/solid";
 
 // Map of links to display in the side navigation.
 // Depending on the size of the application, this would be stored in a database.
@@ -11,6 +12,11 @@ const links = [
         name: 'Home',
         href: '/dashboard',
         icon: HomeIcon
+    },
+    {
+        name: 'Videos',
+        href: '/dashboard/videos',
+        icon: VideoCameraIcon,
     },
     {
         name: 'Invoices',
