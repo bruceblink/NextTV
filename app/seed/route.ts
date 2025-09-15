@@ -9,29 +9,25 @@ async function seedUsers() {
     EXTENSION IF NOT EXISTS "uuid-ossp"`;
 
     await sql`
-        CREATE TABLE IF NOT EXISTS users
+        CREATE TABLE IF NOT EXISTS user_info
         (
-            id
-            UUID
-            DEFAULT
-            uuid_generate_v4
-        (
-        ) PRIMARY KEY,
-            name VARCHAR
-        (
-            255
-        ) NOT NULL,
-            email TEXT NOT NULL UNIQUE,
-            password TEXT NOT NULL
-            );
+            id           BIGSERIAL PRIMARY KEY,
+            email        VARCHAR(255) UNIQUE,
+            username     VARCHAR(100) UNIQUE,
+            password     TEXT, -- 本地登录密码哈希（可为空）
+            display_name VARCHAR(255),
+            avatar_url   TEXT,
+            created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+            updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+        );
     `;
 
     return await Promise.all(
         users.map(async (user) => {
             const hashedPassword = await bcrypt.hash(user.password, 10);
             return sql`
-                INSERT INTO users (id, name, email, password)
-                VALUES (${user.id}, ${user.name}, ${user.email}, ${hashedPassword}) ON CONFLICT (id) DO NOTHING;
+                INSERT INTO user_info (username, email, password)
+                VALUES (${user.username}, ${user.email}, ${hashedPassword}) ON CONFLICT (id) DO NOTHING;
             `;
         }),
     );
