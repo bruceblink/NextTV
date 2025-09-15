@@ -13,15 +13,17 @@ export const metadata: Metadata = {
 
 export default async function Page(props: {
     searchParams?: Promise<{
-        query?: string;
+        type?: string;
+        tag?: string;
         page?: string;
     }>;
 }) {
     const searchParams = await props.searchParams;
-    const query = searchParams?.query || '';
+    const type = searchParams?.type || '';
+    const tag = searchParams?.type || '';
     const currentPage = Number(searchParams?.page) || 1;
 
-    const totalPages = await fetchInvoicesPages(query);
+    const totalPages = await fetchInvoicesPages(type);
 
     return (
         <div className="w-full">
@@ -31,8 +33,8 @@ export default async function Page(props: {
             <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
                 <Search placeholder="Search videos..."/>
             </div>
-            <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton/>}>
-                <Grid query={query} currentPage={currentPage}/>
+            <Suspense key={type + currentPage} fallback={<InvoicesTableSkeleton/>}>
+                <Grid type={type} tag={tag} currentPage={currentPage}/>
             </Suspense>
             <div className="mt-5 flex w-full justify-center">
                 <Pagination totalPages={totalPages}/>

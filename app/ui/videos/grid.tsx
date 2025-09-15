@@ -1,9 +1,9 @@
 import { fetchFilteredVideos } from '@/app/lib/data';
 import Image from "next/image";
 
-export default async function VideosGrid({ query, currentPage,}: { query: string; currentPage: number; }) {
+export default async function VideosGrid({type, tag, currentPage,}: {type: string; tag: string; currentPage: number; }) {
     // 获取video信息列表
-    const videos = await fetchFilteredVideos(query, currentPage);
+    const videos = await fetchFilteredVideos(type, tag, currentPage);
 
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-6">
