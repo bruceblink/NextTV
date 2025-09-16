@@ -12,8 +12,8 @@ let initialized = false;
 async function seedUsers(tx: typeof sql) {
     await tx`
         CREATE TABLE IF NOT EXISTS user_info (
-                                                 id BIGSERIAL PRIMARY KEY,
-                                                 email VARCHAR(255) UNIQUE,
+            id BIGSERIAL PRIMARY KEY,
+            email VARCHAR(255) UNIQUE,
             username VARCHAR(100) UNIQUE,
             password TEXT,
             display_name VARCHAR(255),
@@ -36,7 +36,7 @@ async function seedCustomers(tx: typeof sql) {
     await tx`CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`;
     await tx`
         CREATE TABLE IF NOT EXISTS customers (
-                                                 id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+            id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
             name VARCHAR(255) NOT NULL,
             email VARCHAR(255) NOT NULL,
             image_url VARCHAR(255) NOT NULL
@@ -54,7 +54,7 @@ async function seedCustomers(tx: typeof sql) {
 async function seedInvoices(tx: typeof sql) {
     await tx`
         CREATE TABLE IF NOT EXISTS invoices (
-                                                id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+            id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
             customer_id UUID NOT NULL,
             amount INT NOT NULL,
             status VARCHAR(255) NOT NULL,
@@ -73,7 +73,7 @@ async function seedInvoices(tx: typeof sql) {
 async function seedRevenue(tx: typeof sql) {
     await tx`
         CREATE TABLE IF NOT EXISTS revenue (
-                                               month VARCHAR(4) NOT NULL UNIQUE,
+            month VARCHAR(4) NOT NULL UNIQUE,
             revenue INT NOT NULL
             );
     `;
