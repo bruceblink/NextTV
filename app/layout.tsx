@@ -2,6 +2,7 @@ import '@/app/ui/global.css';
 import {inter} from '@/app/ui/fonts';
 import React from "react";
 import {Metadata} from "next";
+import '@/app/lib/initDB'; // 导入即初始化数据库
 
 export const metadata: Metadata = {
     title: {
