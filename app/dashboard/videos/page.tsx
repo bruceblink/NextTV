@@ -5,6 +5,7 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 import { fetchFilteredVideos, ITEMS_PER_PAGE } from '@/app/lib/data';
 import SearchBox from '@/app/ui/videos/SearchBox';
+import {VideosGridSkeleton} from "@/app/ui/skeletons";
 
 export const metadata: Metadata = {
     title: 'Videos',
@@ -39,7 +40,7 @@ export default async function Page(props: {
                 <SearchBox />
             </div>
 
-            <Suspense key={type + tag + currentPage}>
+            <Suspense key={type + tag + currentPage} fallback={<VideosGridSkeleton/>}>
                 <Grid category={category} type={type} tag={tag} currentPage={currentPage} />
             </Suspense>
             <div className="mt-5 flex w-full justify-center">
