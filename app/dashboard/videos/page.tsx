@@ -2,10 +2,9 @@ import Pagination from '@/app/ui/invoices/pagination';
 import Search from '@/app/ui/search';
 import Grid from '@/app/ui/videos/grid';
 import {lusitana} from '@/app/ui/fonts';
-import {InvoicesTableSkeleton} from '@/app/ui/skeletons';
 import {Suspense} from 'react';
-import {fetchInvoicesPages} from '@/app/lib/data';
 import {Metadata} from 'next';
+import {fetchFilteredVideos, ITEMS_PER_PAGE} from "@/app/lib/data";
 
 export const metadata: Metadata = {
     title: 'Videos',
@@ -20,10 +19,13 @@ export default async function Page(props: {
 }) {
     const searchParams = await props.searchParams;
     const type = searchParams?.type || '';
-    const tag = searchParams?.type || '';
+    const tag = searchParams?.tag || '';
     const currentPage = Number(searchParams?.page) || 1;
 
-    const totalPages = await fetchInvoicesPages(type);
+    const res = await fetchFilteredVideos(type, tag, currentPage);
+
+    const total = res.total as number;
+    const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
 
     return (
         <div className="w-full">
@@ -33,7 +35,7 @@ export default async function Page(props: {
             <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
                 <Search placeholder="Search videos..."/>
             </div>
-            <Suspense key={type + currentPage} fallback={<InvoicesTableSkeleton/>}>
+            <Suspense key={type + currentPage} >
                 <Grid type={type} tag={tag} currentPage={currentPage}/>
             </Suspense>
             <div className="mt-5 flex w-full justify-center">

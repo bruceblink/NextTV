@@ -6,7 +6,6 @@ import {
     InvoicesTable,
     LatestInvoiceRaw,
     Revenue,
-    VideoGrid,
 } from './definitions';
 import {formatCurrency} from './utils';
 
@@ -83,7 +82,7 @@ export async function fetchCardData() {
     }
 }
 
-const ITEMS_PER_PAGE = 6;
+export const ITEMS_PER_PAGE = 10;
 
 export async function fetchFilteredInvoices(
     query: string,
@@ -205,33 +204,31 @@ export async function fetchFilteredCustomers(query: string) {
         throw new Error('Failed to fetch customer table.');
     }
 }
-
+// 配置超时的常量
+const REQUEST_TIMEOUT = 10000; // 超时控制（10秒）
 
 export async function fetchFilteredVideos(
     type: string,
     tag: string,
     currentPage: number,
-) {
-    const offset = (currentPage - 1) * ITEMS_PER_PAGE;
-    const target = `https://movie.douban.com/j/search_subjects?type=${type}&tag=${tag}&sort=recommend&page_limit=${ITEMS_PER_PAGE}&page_start=${offset}`;
+): Promise<any> {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
 
+    const url = `https://m.douban.com/rexxar/api/v2/subject/recent_hot/movie?start=${start}&limit=${ITEMS_PER_PAGE}&category=冷门佳片&type=全部`;
+    console.log(url);
     try {
-        return await fetchDoubanData(target);
+        return await fetchDoubanData(url);
     } catch (error) {
-        console.error('Database Error:', error);
-        throw new Error('Failed to fetch invoices.');
+        console.error('请求豆瓣 API 失败:', error);
+        throw new Error('无法获取影片数据');
     }
 }
 
-const PROXY_URL = '/proxy/';
-
-async function fetchDoubanData(url: string) {
-    // 添加超时控制
+async function fetchDoubanData(url: string): Promise<any> {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
+    const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
 
-    // 设置请求选项，包括信号和头部
-    const fetchOptions = {
+    const fetchOptions: RequestInit = {
         signal: controller.signal,
         headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
@@ -241,42 +238,18 @@ async function fetchDoubanData(url: string) {
     };
 
     try {
-        // 添加鉴权参数到代理URL
-        const proxiedUrl = PROXY_URL + encodeURIComponent(url);
-
-        // 尝试直接访问（豆瓣API可能允许部分CORS请求）
-        const response = await fetch(proxiedUrl, fetchOptions);
+        const response = await fetch(url, fetchOptions);
         clearTimeout(timeoutId);
 
         if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+            console.error(`HTTP 错误！状态码: ${response.status}`);
+            return {};
         }
 
         return await response.json();
-    } catch (err) {
-        console.error("豆瓣 API 请求失败（直接代理）：", err);
-
-        // 失败后尝试备用方法：作为备选
-        const fallbackUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-
-        try {
-            const fallbackResponse = await fetch(fallbackUrl);
-
-            if (!fallbackResponse.ok) {
-                throw new Error(`备用API请求失败! 状态: ${fallbackResponse.status}`);
-            }
-
-            const data = await fallbackResponse.json();
-
-            // 解析原始内容
-            if (data && data.contents) {
-                return JSON.parse(data.contents);
-            } else {
-                throw new Error("无法获取有效数据");
-            }
-        } catch (fallbackErr) {
-            console.error("豆瓣 API 备用请求也失败：", fallbackErr);
-            throw fallbackErr; // 向上抛出错误，让调用者处理
-        }
+    } catch (error) {
+        clearTimeout(timeoutId); // 确保清除超时
+        console.error("豆瓣 API 请求失败（直接代理）：", error);
+        return {};
     }
 }
