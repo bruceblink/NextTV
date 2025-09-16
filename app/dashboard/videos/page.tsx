@@ -4,7 +4,7 @@ import { lusitana } from '@/app/ui/fonts';
 import { Suspense } from 'react';
 import { Metadata } from 'next';
 import { fetchFilteredVideos, ITEMS_PER_PAGE } from '@/app/lib/data';
-import SearchBox from '@/app/ui/SearchBox';
+import SearchBox from '@/app/ui/videos/SearchBox';
 
 export const metadata: Metadata = {
     title: 'Videos',
