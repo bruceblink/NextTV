@@ -129,6 +129,27 @@ async function seedRevenue() {
     );
 }
 
+async function seedVideos() {
+
+    return sql`
+        CREATE TABLE IF NOT EXISTS video_info
+        (
+            id           BIGSERIAL PRIMARY KEY,
+            title        VARCHAR(255) UNIQUE,
+            rating       JSONB ,
+            pic          TEXT, 
+            is_new       BOOLEAN,
+            uri          TEXT,
+            episodes_info   TEXT,
+            card_subtitle   TEXT,
+            type          VARCHAR(128),
+            created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+            updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+        );
+    `;
+}
+
+
 export async function GET() {
     try {
         await sql.begin(() => [
@@ -136,6 +157,7 @@ export async function GET() {
             seedCustomers(),
             seedInvoices(),
             seedRevenue(),
+            seedVideos(),
         ]);
         return Response.json({message: 'Database seeded successfully'});
     } catch (error) {
