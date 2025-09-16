@@ -210,7 +210,7 @@ const REQUEST_TIMEOUT = 10000; // 超时控制（10秒）
 export async function fetchFilteredVideos(
     category: string,
     type: string,
-    tag: string,
+    _tag: string,
     currentPage: number,
 ): Promise<any> {
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -218,7 +218,11 @@ export async function fetchFilteredVideos(
     const url = `https://m.douban.com/rexxar/api/v2/subject/recent_hot/movie?start=${start}&limit=${ITEMS_PER_PAGE}&category=${category}&type=${type}`;
     console.log(url);
     try {
-        return await fetchDoubanData(url);
+        const res = await fetchDoubanData(url);
+        if (res && res.items?.length) {
+            await insertVideosToDB(res.items);
+        }
+        return res;
     } catch (error) {
         console.error('请求豆瓣 API 失败:', error);
         throw new Error('无法获取影片数据');
@@ -252,5 +256,40 @@ async function fetchDoubanData(url: string): Promise<any> {
         clearTimeout(timeoutId); // 确保清除超时
         console.error("豆瓣 API 请求失败: ", error);
         return {};
+    }
+}
+
+
+// 🔹 插入数据库
+async function insertVideosToDB(videos: any[]) {
+    for (const video of videos) {
+        try {
+            await sql`
+                INSERT INTO video_info (
+                    title,
+                    rating,
+                    pic,
+                    is_new,
+                    uri,
+                    episodes_info,
+                    card_subtitle,
+                    type
+                )
+                VALUES (
+                    ${video.title},
+                    ${video.rating ? JSON.stringify(video.rating) : null}::jsonb,
+                    ${video.pic ? JSON.stringify(video.pic) : null}::jsonb,
+                    ${video.is_new ?? false},
+                    ${video.uri ?? null},
+                    ${video.episodes_info ?? null},
+                    ${video.card_subtitle ?? null},
+                    ${video.type ?? null}
+                )
+                ON CONFLICT ON CONSTRAINT uniq_video_info DO UPDATE
+                SET updated_at = now();
+            `;
+        } catch (err) {
+            console.error("插入数据库失败: ", err, video.title);
+        }
     }
 }
