@@ -2,9 +2,9 @@ import { fetchFilteredVideos } from '@/app/lib/data';
 import Image from "next/image";
 import {Video} from "@/app/lib/definitions";
 
-export default async function VideosGrid({type, tag, currentPage,}: {type: string; tag: string; currentPage: number; }) {
+export default async function VideosGrid({category, type, tag, currentPage,}: {category: string; type: string; tag: string; currentPage: number; }) {
     // 获取video信息列表
-    const res = await fetchFilteredVideos(type, tag, currentPage);
+    const res = await fetchFilteredVideos(category, type, tag, currentPage);
 
     const videos = res?.items as Video[]
 

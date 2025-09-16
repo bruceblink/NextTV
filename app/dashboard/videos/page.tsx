@@ -12,6 +12,7 @@ export const metadata: Metadata = {
 
 export default async function Page(props: {
     searchParams?: Promise<{
+        category?:string;
         type?: string;
         tag?: string;
         page?: string;
@@ -19,11 +20,12 @@ export default async function Page(props: {
 }) {
     // 获取URL地址栏参数
     const searchParams = await props.searchParams;
-    const type = searchParams?.type || '';
+    const category = searchParams?.category || '最新';
+    const type = searchParams?.type || '全部';
     const tag = searchParams?.tag || '';
     const currentPage = Number(searchParams?.page) || 1;
 
-    const res = await fetchFilteredVideos(type, tag, currentPage);
+    const res = await fetchFilteredVideos(category, type, tag, currentPage);
 
     const total = res.total as number;
     const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
@@ -38,7 +40,7 @@ export default async function Page(props: {
             </div>
 
             <Suspense key={type + tag + currentPage}>
-                <Grid type={type} tag={tag} currentPage={currentPage} />
+                <Grid category={category} type={type} tag={tag} currentPage={currentPage} />
             </Suspense>
             <div className="mt-5 flex w-full justify-center">
                 <Pagination totalPages={totalPages}/>
