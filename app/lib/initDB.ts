@@ -88,10 +88,12 @@ async function seedRevenue(tx: typeof sql) {
 
 async function seedVideos(tx: typeof sql) {
     await tx`CREATE EXTENSION IF NOT EXISTS "pgcrypto";`;
+
+    // 创建表
     await tx`
         CREATE TABLE IF NOT EXISTS video_info (
-                                                  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            title VARCHAR(255) UNIQUE,
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            title VARCHAR(255),
             rating JSONB,
             pic JSONB,
             is_new BOOLEAN,
@@ -99,11 +101,14 @@ async function seedVideos(tx: typeof sql) {
             episodes_info TEXT,
             card_subtitle TEXT,
             type VARCHAR(128),
+            date TEXT,
             created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
             updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
             CONSTRAINT uniq_video_info UNIQUE (title, episodes_info)
             );
     `;
+
+    // 创建或更新函数
     await tx`
           CREATE OR REPLACE FUNCTION update_updated_at_column()
           RETURNS TRIGGER AS $$
@@ -114,13 +119,21 @@ async function seedVideos(tx: typeof sql) {
           $$ LANGUAGE plpgsql;
         `;
 
-    await tx`
-          CREATE TRIGGER update_video_info_updated_at
-          BEFORE UPDATE ON video_info
-          FOR EACH ROW
-          EXECUTE FUNCTION update_updated_at_column();
-        `;
-
+    // 创建触发器，如果不存在则创建
+    await tx.unsafe(`
+        DO $$
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1 FROM pg_trigger WHERE tgname = 'update_video_info_updated_at'
+            ) THEN
+                CREATE TRIGGER update_video_info_updated_at
+                BEFORE UPDATE ON video_info
+                FOR EACH ROW
+                EXECUTE FUNCTION update_updated_at_column();
+            END IF;
+        END
+        $$;
+    `);
 }
 
 // -------------------- 自动初始化函数 --------------------
