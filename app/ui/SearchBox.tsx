@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { X, Search } from 'lucide-react';
 
 const HOT_TAGS = [
@@ -12,6 +13,7 @@ export default function SearchBox() {
     const [query, setQuery] = useState('');
     const [recentSearches, setRecentSearches] = useState<string[]>([]);
     const [selectedTag, setSelectedTag] = useState<string | null>(null);
+    const router = useRouter();
 
     // 初始化历史搜索
     useEffect(() => {
@@ -35,15 +37,19 @@ export default function SearchBox() {
         setSelectedTag(null);
 
         // 更新历史
-        const updated = [value, ...recentSearches.filter((v) => v !== value)].slice(0, 10);
+        const updated = [value, ...recentSearches.filter(v => v !== value)].slice(0, 10);
         saveRecentSearches(updated);
 
-        console.log('搜索:', value); // TODO: 替换为实际搜索逻辑
+        // 修改 URL 查询参数触发 SSR 页面刷新
+        const params = new URLSearchParams(window.location.search);
+        params.set('type', value);
+        params.set('page', '1'); // 搜索时重置分页
+        router.push(`${window.location.pathname}?${params.toString()}`);
     };
 
     // 删除单条历史
     const removeSearch = (value: string) => {
-        const updated = recentSearches.filter((v) => v !== value);
+        const updated = recentSearches.filter(v => v !== value);
         saveRecentSearches(updated);
     };
 
@@ -73,7 +79,7 @@ export default function SearchBox() {
                 <div>
                     <h3 className="text-sm font-medium mb-2">最近搜索</h3>
                     <div className="flex flex-wrap gap-2">
-                        {recentSearches.map((item) => (
+                        {recentSearches.map(item => (
                             <div
                                 key={item}
                                 className="flex items-center bg-gray-100 px-3 py-1 rounded-full text-sm cursor-pointer hover:bg-gray-200"
@@ -93,7 +99,7 @@ export default function SearchBox() {
             <div>
                 <h3 className="text-sm font-medium mb-2">热门标签</h3>
                 <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
-                    {HOT_TAGS.map((tag) => (
+                    {HOT_TAGS.map(tag => (
                         <button
                             key={tag}
                             onClick={() => {
