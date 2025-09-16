@@ -214,7 +214,7 @@ export async function fetchFilteredVideos(
 ): Promise<any> {
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
 
-    const url = `https://m.douban.com/rexxar/api/v2/subject/recent_hot/movie?start=${start}&limit=${ITEMS_PER_PAGE}&category=冷门佳片&type=全部`;
+    const url = `https://m.douban.com/rexxar/api/v2/subject/recent_hot/movie?start=${start}&limit=${ITEMS_PER_PAGE}&category=最新&type=全部`;
     console.log(url);
     try {
         return await fetchDoubanData(url);
