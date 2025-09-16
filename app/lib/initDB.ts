@@ -27,7 +27,7 @@ async function seedUsers(tx: typeof sql) {
         await tx`
             INSERT INTO user_info (username, email, password)
             VALUES (${user.username}, ${user.email}, ${hashedPassword})
-                ON CONFLICT (username) DO NOTHING
+                ON CONFLICT (email) DO NOTHING
         `;
     }
 }
@@ -42,12 +42,16 @@ async function seedCustomers(tx: typeof sql) {
             image_url VARCHAR(255) NOT NULL
             );
     `;
-    for (const customer of customers) {
-        await tx`
-            INSERT INTO customers (id, name, email, image_url)
-            VALUES (${customer.id}, ${customer.name}, ${customer.email}, ${customer.image_url})
-                ON CONFLICT (id) DO NOTHING
-        `;
+    const [{ count }] = await tx<{ count: string }[]>`
+        SELECT COUNT(*) as count FROM customers
+    `;
+    if (parseInt(count) === 0) {
+        for (const customer of customers) {
+            await tx`
+                INSERT INTO customers (id, name, email, image_url)
+                VALUES (${customer.id}, ${customer.name}, ${customer.email}, ${customer.image_url})
+            `;
+        }
     }
 }
 
@@ -61,12 +65,17 @@ async function seedInvoices(tx: typeof sql) {
             date DATE NOT NULL
             );
     `;
-    for (const invoice of invoices) {
-        await tx`
-            INSERT INTO invoices (customer_id, amount, status, date)
-            VALUES (${invoice.customer_id}, ${invoice.amount}, ${invoice.status}, ${invoice.date})
-                ON CONFLICT (id) DO NOTHING
-        `;
+    const [{ count }] = await tx<{ count: string }[]>`
+        SELECT COUNT(*) as count FROM invoices
+    `;
+
+    if (parseInt(count) === 0) {
+        for (const invoice of invoices) {
+            await tx`
+                INSERT INTO invoices (customer_id, amount, status, date)
+                VALUES (${invoice.customer_id}, ${invoice.amount}, ${invoice.status}, ${invoice.date})
+            `;
+        }
     }
 }
 
@@ -77,12 +86,17 @@ async function seedRevenue(tx: typeof sql) {
             revenue INT NOT NULL
             );
     `;
-    for (const rev of revenue) {
-        await tx`
-            INSERT INTO revenue (month, revenue)
-            VALUES (${rev.month}, ${rev.revenue})
-                ON CONFLICT (month) DO NOTHING
-        `;
+    const [{ count }] = await tx<{ count: string }[]>`
+        SELECT COUNT(*) as count FROM revenue
+    `;
+
+    if (parseInt(count) === 0) {
+        for (const rev of revenue) {
+            await tx`
+                INSERT INTO revenue (month, revenue)
+                VALUES (${rev.month}, ${rev.revenue})
+            `;
+        }
     }
 }
 
