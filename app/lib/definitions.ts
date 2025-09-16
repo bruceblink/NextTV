@@ -93,26 +93,22 @@ export type InvoiceForm = {
 
 
 export type Video = {
-    id: string;  // id
-    title: string; // 标题
-    rating: Rating; // 评分
-    pic: Pic; // 图片
-    is_new: boolean; // 是否新上映
-    date: string; // 日期
-    uri: string; // 豆瓣地址
-    episodes_info: string; // 更新集数
-    card_subtitle: string; // 副标题
-    type: string; // 类型 tv/movie/等
+    id: string;               // id
+    title: string;            // 标题
+    rating?: {                // 评分
+        value: number;        // 分数值
+        count?: number;       // 评分人数
+        max?: number;         // 最高分
+        start_count?: number; // 起始评分人数（可选）
+    };
+    pic: {                    // 图片
+        normal: string;       // 正常尺寸
+        large?: string;       // 大图（可选）
+    };
+    is_new?: boolean;         // 是否新上映
+    date?: string;            // 日期
+    uri?: string;             // 豆瓣地址
+    episodes_info?: string;   // 更新集数
+    card_subtitle?: string;   // 副标题
+    type?: string;            // 类型 tv/movie/等
 };
-
-export type Rating = {
-    count: number;
-    max: number;
-    start_count: number;
-    value: number;
-}
-
-export type Pic = {
-    large: string;
-    normal: string;
-}
