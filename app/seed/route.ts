@@ -130,22 +130,38 @@ async function seedRevenue() {
 }
 
 async function seedVideos() {
+    await sql`CREATE EXTENSION IF NOT EXISTS "pgcrypto";`;
 
-    return sql`
-        CREATE TABLE IF NOT EXISTS video_info
-        (
-            id           BIGSERIAL PRIMARY KEY,
-            title        VARCHAR(255) UNIQUE,
-            rating       JSONB ,
-            pic          TEXT, 
-            is_new       BOOLEAN,
-            uri          TEXT,
-            episodes_info   TEXT,
-            card_subtitle   TEXT,
-            type          VARCHAR(128),
-            created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
-            updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+    await sql`
+        CREATE TABLE IF NOT EXISTS video_info (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            title VARCHAR(255) UNIQUE,
+            rating JSONB,
+            pic JSONB,
+            is_new BOOLEAN,
+            uri TEXT,
+            episodes_info TEXT,
+            card_subtitle TEXT,
+            type VARCHAR(128),
+            created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+            CONSTRAINT uniq_ani_info UNIQUE (title, episodes_info)
         );
+    `;
+
+    await sql`
+        CREATE OR REPLACE FUNCTION update_updated_at_column()
+        RETURNS TRIGGER AS $$
+        BEGIN
+            NEW.updated_at = now();
+            RETURN NEW;
+        END;
+        $$ LANGUAGE plpgsql;
+
+        CREATE TRIGGER update_video_info_updated_at
+        BEFORE UPDATE ON video_info
+        FOR EACH ROW
+        EXECUTE FUNCTION update_updated_at_column();
     `;
 }
 
