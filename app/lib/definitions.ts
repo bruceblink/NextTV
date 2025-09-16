@@ -92,11 +92,11 @@ export type InvoiceForm = {
 };
 
 
-export type VideoGrid = {
+export type Video = {
     id: string;  // id
     title: string; // 标题
     rating: Rating; // 评分
-    pic: string; // 图片
+    pic: Pic; // 图片
     is_new: boolean; // 是否新上映
     date: string; // 日期
     uri: string; // 豆瓣地址
@@ -110,4 +110,9 @@ export type Rating = {
     max: number;
     start_count: number;
     value: number;
+}
+
+export type Pic = {
+    large: string;
+    normal: string;
 }
