@@ -1,10 +1,10 @@
 import Pagination from '@/app/ui/invoices/pagination';
-import Search from '@/app/ui/search';
 import Grid from '@/app/ui/videos/grid';
 import {lusitana} from '@/app/ui/fonts';
 import {Suspense} from 'react';
 import {Metadata} from 'next';
 import {fetchFilteredVideos, ITEMS_PER_PAGE} from "@/app/lib/data";
+import SearchBox from "@/app/ui/SearchBox";
 
 export const metadata: Metadata = {
     title: 'Videos',
@@ -33,7 +33,7 @@ export default async function Page(props: {
                 <h1 className={`${lusitana.className} text-2xl`}>Videos</h1>
             </div>
             <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
-                <Search placeholder="Search videos..."/>
+                <SearchBox/>
             </div>
             <Suspense key={type + currentPage} >
                 <Grid type={type} tag={tag} currentPage={currentPage}/>
