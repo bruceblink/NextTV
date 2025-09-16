@@ -1,17 +1,17 @@
-import type {NextConfig} from 'next';
+import { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
     images: {
-        domains: [  // 允许加载该域名的图片
-            'img1.doubanio.com',
-            'img2.doubanio.com',
-            'img3.doubanio.com',
-            'img4.doubanio.com',
-            'img5.doubanio.com',
-            'img6.doubanio.com',
-            'img7.doubanio.com',
-            'img8.doubanio.com',
-            'img9.doubanio.com',
+        remotePatterns: [
+            { protocol: 'https', hostname: 'img1.doubanio.com' },
+            { protocol: 'https', hostname: 'img2.doubanio.com' },
+            { protocol: 'https', hostname: 'img3.doubanio.com' },
+            { protocol: 'https', hostname: 'img4.doubanio.com' },
+            { protocol: 'https', hostname: 'img5.doubanio.com' },
+            { protocol: 'https', hostname: 'img6.doubanio.com' },
+            { protocol: 'https', hostname: 'img7.doubanio.com' },
+            { protocol: 'https', hostname: 'img8.doubanio.com' },
+            { protocol: 'https', hostname: 'img9.doubanio.com' },
         ],
     },
 };
