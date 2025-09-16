@@ -106,7 +106,6 @@ export type Video = {
         large?: string;       // 大图（可选）
     };
     is_new?: boolean;         // 是否新上映
-    date?: string;            // 日期
     uri?: string;             // 豆瓣地址
     episodes_info?: string;   // 更新集数
     card_subtitle?: string;   // 副标题
