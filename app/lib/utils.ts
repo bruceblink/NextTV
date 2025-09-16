@@ -67,3 +67,40 @@ export const generatePagination = (currentPage: number, totalPages: number) => {
         totalPages,
     ];
 };
+
+export class DoubanUrlUtils {
+    /**
+     * 将单个豆瓣自定义协议链接转换为网页可访问链接
+     * @param doubanUrl 自定义协议链接，例如 douban://douban.com/movie/36221247
+     * @returns 可在浏览器访问的 https 链接
+     */
+    static toHttps(doubanUrl: string): string {
+        if (doubanUrl && !doubanUrl.startsWith("douban://")) {
+            return doubanUrl;
+        }
+
+        const urlWithoutProtocol = doubanUrl.replace("douban://", "");
+
+        if (urlWithoutProtocol.includes("/movie/")) {
+            const id = urlWithoutProtocol.split("/movie/")[1];
+            return `https://movie.douban.com/subject/${id}/`;
+        }
+
+        if (urlWithoutProtocol.includes("/tv/")) {
+            const id = urlWithoutProtocol.split("/tv/")[1];
+            return `https://movie.douban.com/subject/${id}/`; // 豆瓣网页电视剧也用 subject
+        }
+
+        // 其他类型链接原样返回
+        return `https://${urlWithoutProtocol}`;
+    }
+
+    /**
+     * 批量转换豆瓣自定义协议链接数组为网页链接
+     * @param urls 链接数组
+     * @returns 可在浏览器访问的 https 链接数组
+     */
+    static batchToHttps(urls: string[]): string[] {
+        return urls.map(url => this.toHttps(url));
+    }
+}
