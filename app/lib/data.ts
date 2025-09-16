@@ -249,7 +249,7 @@ async function fetchDoubanData(url: string): Promise<any> {
         return await response.json();
     } catch (error) {
         clearTimeout(timeoutId); // 确保清除超时
-        console.error("豆瓣 API 请求失败（直接代理）：", error);
+        console.error("豆瓣 API 请求失败: ", error);
         return {};
     }
 }
