@@ -297,7 +297,7 @@ async function insertVideosToDB(videos: any[]) {
                     pic: toJsonValue(video.pic),
                     is_new: video.is_new ?? false,
                     uri: video.uri ?? null,
-                    episodes_info: video.episodes_info ?? null,
+                    episodes_info: video.episodes_info ?? "暂无",
                     card_subtitle: video.card_subtitle ?? null,
                     category: video.category ?? "movie",
 
@@ -315,7 +315,26 @@ async function insertVideosToDB(videos: any[]) {
                     imdb: video.imdb ?? null,
                 },
                 update: {
-                    updated_at: new Date(),
+                    rating: toJsonValue(video.rating),
+                    pic: toJsonValue(video.pic),
+                    is_new: video.is_new ?? false,
+                    uri: video.uri ?? null,
+                    card_subtitle: video.card_subtitle ?? null,
+                    episodes_info: video.episodes_info ?? "暂无",
+                    category: video.category ?? "movie",
+
+                    // 🔹 新增的详细信息
+                    director: toJsonValue(video.director),
+                    screenwriter: toJsonValue(video.screenwriter),
+                    actors: toJsonValue(video.actors),
+                    type: toJsonValue(video.type),
+                    production_country: toJsonValue(video.production_country),
+                    language: video.language ?? null,
+                    release_year: video.release_year ?? null,
+                    release_date: toJsonValue(video.release_date),
+                    duration: video.duration ?? null,
+                    aka: video.aka ?? null,
+                    imdb: video.imdb ?? null,
                 },
             });
         } catch (err) {
