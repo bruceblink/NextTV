@@ -40,3 +40,4 @@ next-env.d.ts
 
 # 数据库文件
 postgresql
+/generated/prisma
