@@ -4,6 +4,9 @@
     "build": "next build",
     "dev": "next dev --turbopack",
     "start": "next start",
+    "db:migrate": "prisma migrate deploy",
+    "db:seed": "prisma db seed",
+    "vercel-build": "npm run db:migrate && npm run db:seed && npm run build",
     "lint": "next lint",
     "postinstall": "prisma generate"
   },
@@ -36,6 +39,9 @@
     "eslint-config-next": "15.3.5",
     "tsx": "4.20.3",
     "prisma": "^6.16.2"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
