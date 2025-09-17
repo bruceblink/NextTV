@@ -128,17 +128,28 @@ model revenue {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model video_info {
-  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  title         String?  @db.VarChar(255)
-  rating        Json?
-  pic           Json?
-  is_new        Boolean?
-  uri           String?
-  episodes_info String?
-  card_subtitle String?
-  type          String?  @db.VarChar(128)
-  created_at    DateTime @default(now()) @db.Timestamptz(6)
-  updated_at    DateTime @default(now()) @db.Timestamptz(6)
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title              String?  @db.VarChar(255)
+  rating             Json?
+  pic                Json?
+  is_new             Boolean?
+  uri                String?
+  episodes_info      String?
+  card_subtitle      String?
+  director           Json?
+  screenwriter       Json?
+  actors             Json?
+  category           String?  @db.VarChar(128)
+  type               Json?
+  production_country Json?
+  language           String?  @db.VarChar(128)
+  release_year       Int?
+  release_date       String?
+  duration           Int?
+  aka                String?  @db.VarChar(255)
+  imdb               String?  @db.VarChar(64)
+  created_at         DateTime @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime @default(now()) @db.Timestamptz(6)
 
   @@unique([title, episodes_info], map: "uniq_video_info")
 }
