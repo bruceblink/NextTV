@@ -29,7 +29,7 @@ function parseDoubanMovieInfo(html: string): Record<string, any> {
 
     const movieInfo: Record<string, any> = {
         title: $("#content h1 span[property='v:itemreviewed']").text().trim(),
-        year: $("#content h1 span.year").text().replace(/[()]/g, "").trim(),
+        year: parseInt($("#content h1 span.year").text().replace(/[()]/g, "").trim()),
     };
 
     // 特殊字段处理
