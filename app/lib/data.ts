@@ -8,6 +8,7 @@ import {
     Revenue,
 } from './definitions';
 import {formatCurrency} from './utils';
+import prisma from "@/app/lib/prisma";
 
 const sql = postgres(process.env.DATABASE_URL!);
 
@@ -264,32 +265,30 @@ async function fetchDoubanData(url: string): Promise<any> {
 async function insertVideosToDB(videos: any[]) {
     for (const video of videos) {
         try {
-            await sql`
-                INSERT INTO video_info (
-                    title,
-                    rating,
-                    pic,
-                    is_new,
-                    uri,
-                    episodes_info,
-                    card_subtitle,
-                    type
-                )
-                VALUES (
-                    ${video.title},
-                    ${video.rating ? JSON.stringify(video.rating) : null}::jsonb,
-                    ${video.pic ? JSON.stringify(video.pic) : null}::jsonb,
-                    ${video.is_new ?? false},
-                    ${video.uri ?? null},
-                    ${video.episodes_info ?? null},
-                    ${video.card_subtitle ?? null},
-                    ${video.type ?? null}
-                )
-                ON CONFLICT ON CONSTRAINT uniq_video_info DO UPDATE
-                SET updated_at = now();
-            `;
+            await prisma.video_info.upsert({
+                where: {
+                    // Prisma 要用唯一约束字段组合
+                    title_episodes_info: {
+                        title: video.title ?? null,
+                        episodes_info: video.episodes_info ?? null,
+                    },
+                },
+                create: {
+                    title: video.title ?? null,
+                    rating: video.rating ?? null,
+                    pic: video.pic ?? null,
+                    is_new: video.is_new ?? false,
+                    uri: video.uri ?? null,
+                    episodes_info: video.episodes_info ?? null,
+                    card_subtitle: video.card_subtitle ?? null,
+                    type: video.type ?? null,
+                },
+                update: {
+                    updated_at: new Date(),
+                },
+            });
         } catch (err) {
-            console.error("插入数据库失败: ", err, video.title);
+            console.error('插入数据库失败:', err, video.title);
         }
     }
 }
