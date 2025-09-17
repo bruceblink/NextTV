@@ -5,10 +5,12 @@ import {
     InvoiceForm,
     InvoicesTable,
     LatestInvoiceRaw,
-    Revenue,
+    Revenue, Video, VideoInfo,
 } from './definitions';
-import {formatCurrency} from './utils';
+import {DoubanUrlUtils, formatCurrency} from './utils';
 import prisma from "@/app/lib/prisma";
+import pLimit from "p-limit";
+import { Prisma } from "@/generated/prisma";
 
 const sql = postgres(process.env.DATABASE_URL!);
 
@@ -217,11 +219,24 @@ export async function _fetchFilteredVideos(
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
 
     const url = `https://m.douban.com/rexxar/api/v2/subject/recent_hot/movie?start=${start}&limit=${ITEMS_PER_PAGE}&category=${category}&type=${type}`;
-    console.log(url);
     try {
+        // 通过豆瓣接口获取视频的概要信息
         const res = await fetchDoubanData(url);
         if (res && res.items?.length) {
-            await insertVideosToDB(res.items);
+            // 获取概要信息中的uri
+            const videos = res.items as Video[];
+            const limit = pLimit(5); // 同时最多 5 个请求
+            // 并发执行请求
+            const videoInfos: VideoInfo[] = await Promise.all(
+                videos.map(video =>
+                    limit(async () => {
+                        const video_url = DoubanUrlUtils.toHttps(video.uri ?? "");
+                        const video_detail = await DoubanUrlUtils.fetchDoubanVideoInfo(video_url);
+                        return { ...video, ...video_detail } as VideoInfo;
+                    })
+                )
+            );
+            await insertVideosToDB(videoInfos);
         }
         return res;
     } catch (error) {
@@ -260,6 +275,10 @@ async function fetchDoubanData(url: string): Promise<any> {
     }
 }
 
+// 工具函数：把对象安全转换成 Prisma JSON
+function toJsonValue(obj: any): Prisma.InputJsonValue {
+    return obj ?? Prisma.JsonNull;
+}
 
 // 🔹 插入数据库
 async function insertVideosToDB(videos: any[]) {
@@ -267,28 +286,40 @@ async function insertVideosToDB(videos: any[]) {
         try {
             await prisma.video_info.upsert({
                 where: {
-                    // Prisma 要用唯一约束字段组合
                     title_episodes_info: {
                         title: video.title ?? null,
                         episodes_info: video.episodes_info ?? null,
                     },
                 },
                 create: {
-                    title: video.title ?? null,
-                    rating: video.rating ?? null,
-                    pic: video.pic ?? null,
+                    title: video.title ?? "",
+                    rating: toJsonValue(video.rating),
+                    pic: toJsonValue(video.pic),
                     is_new: video.is_new ?? false,
                     uri: video.uri ?? null,
                     episodes_info: video.episodes_info ?? null,
                     card_subtitle: video.card_subtitle ?? null,
-                    type: video.type ?? null,
+                    category: video.category ?? "movie",
+
+                    // 🔹 新增的详细信息
+                    director: toJsonValue(video.director),
+                    screenwriter: toJsonValue(video.screenwriter),
+                    actors: toJsonValue(video.actors),
+                    type: toJsonValue(video.type),
+                    production_country: toJsonValue(video.production_country),
+                    language: video.language ?? null,
+                    release_year: video.release_year ?? null,
+                    release_date: toJsonValue(video.release_date),
+                    duration: video.duration ?? null,
+                    aka: video.aka ?? null,
+                    imdb: video.imdb ?? null,
                 },
                 update: {
                     updated_at: new Date(),
                 },
             });
         } catch (err) {
-            console.error('插入数据库失败:', err, video.title);
+            console.error("插入数据库失败:", err, video.title);
         }
     }
 }
@@ -302,7 +333,9 @@ export async function fetchFilteredVideos(
     currentPage: number,
 ): Promise<any> {
     const start = (currentPage - 1) * ITEMS_PER_PAGE || 0;
-
+    // 从豆瓣API获取数据
+    await _fetchFilteredVideos(category, type, _tag, currentPage);
+    // 从数据库查询
     try {
         const [totalCount, videos] = await prisma.$transaction([
             prisma.video_info.count({
@@ -312,8 +345,6 @@ export async function fetchFilteredVideos(
                         query ? { title: { contains: query, mode: 'insensitive' } } : {},
                         // 精确匹配分类
                         category ? { card_subtitle: { contains: category, mode: 'insensitive' } } : {},
-                        // 精确匹配类型
-                        type ? { type: type } : {},
                         // 标签（假设你存储在 episodes_info 或 tag 字段里）
                         _tag ? { episodes_info: { contains: _tag } } : {},
                     ],
@@ -324,7 +355,6 @@ export async function fetchFilteredVideos(
                     AND: [
                         query ? { title: { contains: query, mode: 'insensitive' } } : {},
                         category ? { card_subtitle: category } : {},
-                        type ? { type: type } : {},
                         _tag ? { episodes_info: { contains: _tag } } : {},
                     ],
                 },
