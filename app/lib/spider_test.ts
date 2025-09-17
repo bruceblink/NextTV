@@ -1,27 +1,22 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
 
-// 豆瓣 Top250 URL（第一页）
 const URL = "https://movie.douban.com/subject/36221247/";
-//const URL = "https://movie.douban.com/top250";
-
 
 /**
  * 获取豆瓣电影信息
- * @param url 豆瓣电影详情页 URL
  */
 async function fetchDoubanVideoInfo(url: string): Promise<Record<string, any>> {
     try {
         const response = await axios.get(url, {
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-                'Referer': 'https://movie.douban.com/',
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+                Referer: "https://movie.douban.com/",
             },
         });
-
         return parseDoubanMovieInfo(response.data);
     } catch (err) {
-        console.error('抓取失败:', err);
+        console.error("抓取失败:", err);
         return {};
     }
 }
@@ -34,37 +29,51 @@ function parseDoubanMovieInfo(html: string): Record<string, any> {
 
     const movieInfo: Record<string, any> = {
         title: $("#content h1 span[property='v:itemreviewed']").text().trim(),
-        year: $("#content h1 span.year").text().replace(/[()]/g, '').trim(),
-        '导演': $('a[rel="v:directedBy"]').text(),
-        '编剧': $('#info > span:nth-child(3) .attrs > a').map((_, el) => $(el).text().trim()).get(),
-        '主演': $('a[rel="v:starring"]').map((_, el) => $(el).text()).get(),
-        '类型': $('span[property="v:genre"]').map((_, el) => $(el).text().trim()).get(),
-        '上映日期': $('span[property="v:initialReleaseDate"]').map((_, el) => $(el).text().trim()).get(),
-        '片长': $('span[property="v:runtime"]').text().trim(),
+        year: $("#content h1 span.year").text().replace(/[()]/g, "").trim(),
     };
-    $('#info .pl').each((_, el) => {
-        const span = $(el);
-        const label = span.text().trim().replace(/:$/, '');
-        //const nextEl = span.next();
 
-        if (!span) return;
+    // 特殊字段处理
+    const extractors: Record<string, () => any> = {
+        导演: () =>
+            $('a[rel="v:directedBy"]')
+                .map((_, el) => $(el).text().trim())
+                .get(),
+        编剧: () =>
+            $('#info span:contains("编剧") .attrs a')
+                .map((_, el) => $(el).text().trim())
+                .get(),
+        主演: () =>
+            $('a[rel="v:starring"]')
+                .map((_, el) => $(el).text().trim())
+                .get(),
+        类型: () =>
+            $('span[property="v:genre"]')
+                .map((_, el) => $(el).text().trim())
+                .get(),
+        上映日期: () =>
+            $('span[property="v:initialReleaseDate"]')
+                .map((_, el) => $(el).text().trim())
+                .get(),
+        片长: () => $('span[property="v:runtime"]').text().trim(),
+    };
 
-        // 主演处理
-        if (label === '主演' || label === '类型' || label === '上映日期' || label === '片长' || label === '导演' || label === '编剧') {
+    // 基础字段
+    for (const key of Object.keys(extractors)) {
+        movieInfo[key] = extractors[key]();
+    }
 
-        } else {
-            const textNode = span[0].next;
-            movieInfo[label] = textNode && textNode.type === 'text'
-                ? textNode.data.trim()
-                : '';
-        }
+    // 解析 info 区域其他字段（制片国家/地区、语言、IMDb 等）
+    $("#info .pl").each((_, el) => {
+        const label = $(el).text().trim().replace(/:$/, "");
+        if (extractors[label]) return; // 已经处理过的字段跳过
+
+        const textNode = el.next;
+        movieInfo[label] =
+            textNode && textNode.type === "text" ? textNode.data.trim() : "";
     });
 
     return movieInfo;
 }
 
-
 const res = await fetchDoubanVideoInfo(URL);
-
-console.log(res)
-
+console.log(res);
