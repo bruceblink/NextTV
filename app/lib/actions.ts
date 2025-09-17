@@ -7,7 +7,7 @@ import {redirect} from "next/navigation";
 import {signIn} from "@/auth";
 import {AuthError} from "next-auth";
 
-const sql = postgres(process.env.POSTGRES_URL!);
+const sql = postgres(process.env.DATABASE_URL!);
 
 export type State = {
     errors?: {

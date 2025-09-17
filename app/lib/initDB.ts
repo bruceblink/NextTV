@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import postgres from 'postgres';
 import { users, customers, invoices, revenue } from './placeholder-data';
 
-const sql = postgres(process.env.POSTGRES_URL!);
+const sql = postgres(process.env.DATABASE_URL!);
 
 // -------------------- 模块级单例 --------------------
 let initialized = false;

@@ -26,7 +26,7 @@ pnpm dev
 
 ### 2. 服务器部署运行
 
-修改服务端的数据库链接地址，即.env中的`POSTGRES_URL=`的值，更新为你服务端的地址，然后点击下面按钮一键部署，更新.env配置为生产配置即可：
+修改服务端的数据库链接地址，即.env中的`DATABASE_URL=`的值，更新为你服务端的地址，然后点击下面按钮一键部署，更新.env配置为生产配置即可：
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/bruceblink/nextTV)  
 
