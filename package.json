@@ -4,9 +4,12 @@
     "build": "next build",
     "dev": "next dev --turbopack",
     "start": "next start",
+
+    "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
     "db:seed": "prisma db seed",
-    "vercel-build": "npm run db:migrate && npm run db:seed && npm run build",
+    "vercel-build": "npm run db:generate && npm run db:migrate && npm run db:seed && npm run build",
+
     "lint": "next lint",
     "postinstall": "prisma generate"
   },
