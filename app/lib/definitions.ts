@@ -91,8 +91,7 @@ export type InvoiceForm = {
     status: 'pending' | 'paid';
 };
 
-
-export type Video = {
+export type BaseVideo  = {
     id: string;               // id
     title: string;            // 标题
     rating?: {                // 评分
@@ -109,5 +108,21 @@ export type Video = {
     uri?: string;             // 豆瓣地址
     episodes_info?: string;   // 更新集数
     card_subtitle?: string;   // 副标题
-    type?: string;            // 类型 tv/movie/等
+    category: string;            // 类型 tv/movie/等
+};
+
+export type Video = BaseVideo;
+
+export type VideoInfo = BaseVideo & {
+    director: JSON;
+    screenwriter?: JSON;
+    actors?: JSON;
+    type?: JSON;
+    production_country?: JSON;
+    language?: string;
+    release_year?: number;
+    release_date?: JSON;
+    duration: number;
+    aka?: string;
+    imdb?: string;
 };
