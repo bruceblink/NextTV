@@ -54,7 +54,12 @@ function parseDoubanMovieInfo(html: string): Record<string, any> {
             $('span[property="v:initialReleaseDate"]')
                 .map((_, el) => $(el).text().trim())
                 .get(),
-        片长: () => $('span[property="v:runtime"]').text().trim(),
+        片长: () => {
+            const runtime = $('span[property="v:runtime"]').text().trim();
+            const match = runtime.match(/\d+/); // 匹配第一个数字
+            return match ? parseInt(match[0], 10) : null;
+        },
+
     };
 
     // 基础字段
