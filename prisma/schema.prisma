@@ -97,20 +97,6 @@ model revenue {
   revenue Int
 }
 
-model subscription_token {
-  subscription_token String        @id
-  subscriber_id      String        @db.Uuid
-  subscriptions      subscriptions @relation(fields: [subscriber_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-}
-
-model subscriptions {
-  id                 String               @id @db.Uuid
-  email              String               @unique
-  name               String
-  subscribed_at      DateTime             @db.Timestamptz(6)
-  subscription_token subscription_token[]
-}
-
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model user_identities {
   id               BigInt    @id @default(autoincrement())
@@ -142,7 +128,7 @@ model user_info {
 
 model video_info {
   id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  title         String?  @unique @db.VarChar(255)
+  title         String?  @db.VarChar(255)
   rating        Json?
   pic           Json?
   is_new        Boolean?
