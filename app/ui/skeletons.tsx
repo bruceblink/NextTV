@@ -232,6 +232,10 @@ export function VideosGridSkeleton() {
             <GridSkeleton/>
             <GridSkeleton/>
             <GridSkeleton/>
+            <GridSkeleton/>
+            <GridSkeleton/>
+            <GridSkeleton/>
+            <GridSkeleton/>
         </div>
     );
 }
