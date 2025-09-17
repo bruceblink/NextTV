@@ -13,6 +13,7 @@ const HOT_TAGS = ['动漫', '综艺', '纪录片', '短剧'];
 
 interface SearchParams {
     query?: string;          // 搜索框输入
+    type?: string;          // 分类框输入
     category?: string;       // 分类内部值
     tag?: string;            // 热门标签
     page?: number | string;  // 分页
@@ -43,6 +44,7 @@ export default function SearchBox() {
     const handleSearch = (params: SearchParams) => {
         // 更新状态
         if (params.query !== undefined) setQuery(params.query);
+        if (params.type !== undefined) setQuery(params.type);
         if (params.tag !== undefined) setSelectedTag(params.tag);
         if (params.category !== undefined) setSelectedCategory(params.category);
 
@@ -55,6 +57,7 @@ export default function SearchBox() {
         // 拼接 URL 查询参数
         const urlParams = new URLSearchParams(window.location.search);
         if (params.query) urlParams.set('query', params.query);
+        if (params.type) urlParams.set('query', params.type);
         if (params.category) urlParams.set('category', params.category);
         if (params.tag) urlParams.set('tag', params.tag);
         urlParams.set('page', (params.page ?? 1).toString());
