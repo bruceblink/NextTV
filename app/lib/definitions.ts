@@ -121,7 +121,7 @@ export type VideoInfo = BaseVideo & {
     production_country?: JSON;
     language?: string;
     release_year?: number;
-    release_date?: JSON;
+    release_date?: string;
     duration: number;
     aka?: string;
     imdb?: string;
