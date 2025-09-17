@@ -29,52 +29,68 @@ function parseDoubanMovieInfo(html: string): Record<string, any> {
 
     const movieInfo: Record<string, any> = {
         title: $("#content h1 span[property='v:itemreviewed']").text().trim(),
-        year: parseInt($("#content h1 span.year").text().replace(/[()]/g, "").trim()),
+        release_year: parseInt($("#content h1 span.year").text().replace(/[()]/g, "").trim()) || null,
     };
 
-    // 特殊字段处理
+    // 英文 key 的提取器
     const extractors: Record<string, () => any> = {
-        导演: () =>
+        director: () =>
             $('a[rel="v:directedBy"]')
                 .map((_, el) => $(el).text().trim())
                 .get(),
-        编剧: () =>
+        screenwriter: () =>
             $('#info span:contains("编剧") .attrs a')
                 .map((_, el) => $(el).text().trim())
                 .get(),
-        主演: () =>
+        actors: () =>
             $('a[rel="v:starring"]')
                 .map((_, el) => $(el).text().trim())
                 .get(),
-        类型: () =>
+        type: () =>
             $('span[property="v:genre"]')
                 .map((_, el) => $(el).text().trim())
                 .get(),
-        上映日期: () =>
+        release_date: () =>
             $('span[property="v:initialReleaseDate"]')
                 .map((_, el) => $(el).text().trim())
                 .get(),
-        片长: () => {
+        duration: () => {
             const runtime = $('span[property="v:runtime"]').text().trim();
             const match = runtime.match(/\d+/); // 匹配第一个数字
             return match ? parseInt(match[0], 10) : null;
         },
-
     };
 
-    // 基础字段
+    // 基础字段（英文 key）
     for (const key of Object.keys(extractors)) {
         movieInfo[key] = extractors[key]();
     }
 
-    // 解析 info 区域其他字段（制片国家/地区、语言、IMDb 等）
+    // info 区域其他字段（制片国家/地区、语言、IMDb 等）
     $("#info .pl").each((_, el) => {
         const label = $(el).text().trim().replace(/:$/, "");
-        if (extractors[label]) return; // 已经处理过的字段跳过
-
         const textNode = el.next;
-        movieInfo[label] =
+        const value =
             textNode && textNode.type === "text" ? textNode.data.trim() : "";
+
+        switch (label) {
+            case "制片国家/地区":
+                movieInfo.production_country = value;
+                break;
+            case "语言":
+                movieInfo.language = value;
+                break;
+            case "IMDb":
+                movieInfo.imdb = value;
+                break;
+            case "又名":
+                movieInfo.aka = value;
+                break;
+            default:
+                // 其他暂时忽略或存储到 extra
+                if (!movieInfo.extra) movieInfo.extra = {};
+                movieInfo.extra[label] = value;
+        }
     });
 
     return movieInfo;
