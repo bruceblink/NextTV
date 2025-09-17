@@ -64,23 +64,6 @@ model ani_watch_history {
   @@index([watched_time], map: "idx_ani_watch_history_time")
 }
 
-model customers {
-  id        String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  name      String @db.VarChar(255)
-  email     String @db.VarChar(255)
-  image_url String @db.VarChar(255)
-}
-
-model invoices {
-  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  customer_id String   @db.Uuid
-  amount      Int
-  status      String   @db.VarChar(255)
-  date        DateTime @db.Date
-
-  @@unique([customer_id, date, amount, status], name: "unique_invoice")
-}
-
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model refresh_tokens {
   id         BigInt    @id @default(autoincrement())
@@ -90,11 +73,6 @@ model refresh_tokens {
   created_at DateTime  @default(now()) @db.Timestamptz(6)
   revoked    Boolean   @default(false)
   user_info  user_info @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-}
-
-model revenue {
-  month   String @unique @db.VarChar(4)
-  revenue Int
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -126,6 +104,29 @@ model user_info {
   user_identities user_identities[]
 }
 
+model customers {
+  id        String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name      String @db.VarChar(255)
+  email     String @db.VarChar(255)
+  image_url String @db.VarChar(255)
+}
+
+model invoices {
+  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  customer_id String   @db.Uuid
+  amount      Int
+  status      String   @db.VarChar(255)
+  date        DateTime @db.Date
+
+  @@unique([customer_id, date, amount, status])
+}
+
+model revenue {
+  month   String @unique @db.VarChar(4)
+  revenue Int
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model video_info {
   id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title         String?  @db.VarChar(255)
