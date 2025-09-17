@@ -3,10 +3,10 @@ import Image from "next/image";
 import { Video } from "@/app/lib/definitions";
 import {DoubanUrlUtils} from "@/app/lib/utils";
 
-export default async function VideosGrid({category, type, tag, currentPage,}: {category: string; type: string; tag: string; currentPage: number; }) {
+export default async function VideosGrid({query, category, type, tag, currentPage,}: {query: string; category: string; type: string; tag: string; currentPage: number; }) {
     // 获取video信息列表
-    const res = await fetchFilteredVideos(category, type, tag, currentPage);
-    const videos = res?.items as Video[];
+    const res = await fetchFilteredVideos(query, category, type, tag, currentPage);
+    const videos = res?.videos as Video[];
 
     return (
         <div

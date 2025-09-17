@@ -208,7 +208,7 @@ export async function fetchFilteredCustomers(query: string) {
 // 配置超时的常量
 const REQUEST_TIMEOUT = 10000; // 超时控制（10秒）
 
-export async function fetchFilteredVideos(
+export async function _fetchFilteredVideos(
     category: string,
     type: string,
     _tag: string,
@@ -290,5 +290,54 @@ async function insertVideosToDB(videos: any[]) {
         } catch (err) {
             console.error('插入数据库失败:', err, video.title);
         }
+    }
+}
+
+
+export async function fetchFilteredVideos(
+    query: string,
+    category: string,
+    type: string,
+    _tag: string,
+    currentPage: number,
+): Promise<any> {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE || 0;
+
+    try {
+        const [totalCount, videos] = await prisma.$transaction([
+            prisma.video_info.count({
+                where: {
+                    AND: [
+                        // 模糊匹配标题
+                        query ? { title: { contains: query, mode: 'insensitive' } } : {},
+                        // 精确匹配分类
+                        category ? { card_subtitle: { contains: category, mode: 'insensitive' } } : {},
+                        // 精确匹配类型
+                        type ? { type: type } : {},
+                        // 标签（假设你存储在 episodes_info 或 tag 字段里）
+                        _tag ? { episodes_info: { contains: _tag } } : {},
+                    ],
+                },
+            }),
+            prisma.video_info.findMany({
+                where: {
+                    AND: [
+                        query ? { title: { contains: query, mode: 'insensitive' } } : {},
+                        category ? { card_subtitle: category } : {},
+                        type ? { type: type } : {},
+                        _tag ? { episodes_info: { contains: _tag } } : {},
+                    ],
+                },
+                skip: start,
+                take: ITEMS_PER_PAGE,
+                orderBy: {
+                    created_at: "asc",
+                },
+            }),
+        ]);
+
+        return { totalCount, videos };
+    } catch (err) {
+        console.error("查询数据库失败:", err);
     }
 }
