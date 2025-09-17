@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 -- CreateTable
 CREATE TABLE "public"."_sqlx_migrations" (
     "version" BIGINT NOT NULL,
