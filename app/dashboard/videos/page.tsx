@@ -3,7 +3,7 @@ import Grid from '@/app/ui/videos/grid';
 import { lusitana } from '@/app/ui/fonts';
 import { Suspense } from 'react';
 import { Metadata } from 'next';
-import { fetchFilteredVideos, ITEMS_PER_PAGE } from '@/app/lib/data';
+import { ITEMS_PER_PAGE } from '@/app/lib/data';
 import SearchBox from '@/app/ui/videos/SearchBox';
 import {VideosGridSkeleton} from "@/app/ui/skeletons";
 
@@ -28,9 +28,7 @@ export default async function Page(props: {
     const tag = searchParams?.tag || '';
     const currentPage = Number(searchParams?.page) || 1;
 
-    const res = await fetchFilteredVideos(query, category, type, tag, currentPage);
-
-    const total = res.totalCount as number;
+    const total = 500;
     const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
 
     return (
