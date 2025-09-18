@@ -2,7 +2,7 @@ import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
 import {
     fetchVideoInfoById,
     fetchDoubanDataById,
-    insertVideoToDB,
+    upsertVideoToDB,
 } from '@/app/lib/data';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
@@ -32,7 +32,7 @@ export default async function Page({ params, searchParams,} :
     // 如果从豆瓣获取到了视频详情数据，插入数据库
     if (videoDouban) {
         videoDetail = { ...videoDetail, ...videoDouban };
-        await insertVideoToDB(videoDetail);
+        await upsertVideoToDB(videoDetail);
     }
 
     return (

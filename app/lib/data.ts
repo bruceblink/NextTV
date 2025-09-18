@@ -266,20 +266,54 @@ function toJsonValue(obj: any): Prisma.InputJsonValue {
     return obj ?? Prisma.JsonNull;
 }
 
-// 🔹 插入数据库
+/**
+ * 批量插入多条Video,唯一约束冲突则跳过
+ * @param videos
+ */
 export async function insertVideosToDB(videos: any[]) {
-    for (const video of videos) {
-        try {
-            await insertVideoToDB(video)
-        } catch (err) {
-            console.error("插入数据库失败:", err, video.title);
-            throw err;
-        }
+    try {
+        await prisma.video_info.createMany({
+            data: videos.map(video => ({
+                title: video.title ?? "",
+                rating: toJsonValue(video.rating),
+                pic: toJsonValue(video.pic),
+                is_new: video.is_new ?? false,
+                uri: video.uri ?? null,
+                episodes_info: video.episodes_info ?? "",
+                card_subtitle: video.card_subtitle ?? null,
+                category: video.category ?? "movie",
+
+                // 详细信息
+                original_title: video.original_title ?? "",
+                intro: video.intro ?? "",
+                genres: toJsonValue(video.genres),
+                director: toJsonValue(video.director),
+                screenwriter: toJsonValue(video.screenwriter),
+                actors: toJsonValue(video.actors),
+                type: toJsonValue(video.type),
+                production_country: toJsonValue(video.production_country),
+                language: toJsonValue(video.language),
+                release_year: video.release_year ?? null,
+                release_date: toJsonValue(video.release_date),
+                duration: toJsonValue(video.duration),
+                aka: toJsonValue(video.aka),
+                imdb: video.imdb ?? null,
+            })),
+            skipDuplicates: true, // 避免唯一约束冲突
+        });
+    } catch (err) {
+        console.error("批量插入数据库失败:", err);
+        throw err;
     }
 }
 
 
-export async function insertVideoToDB(video: any) {
+
+/**
+ * 插入更新单挑video信息
+ * @param video
+ */
+export async function upsertVideoToDB(video: any) {
     try {
         await prisma.video_info.upsert({
             where: {
