@@ -1,7 +1,7 @@
 import postgres from 'postgres';
 import {
     CustomerField,
-    CustomersTableType,
+    CustomersTableType, DOUBAN_API_HEADER,
     InvoiceForm,
     InvoicesTable,
     LatestInvoiceRaw,
@@ -211,9 +211,6 @@ export async function fetchFilteredCustomers(query: string) {
 const REQUEST_TIMEOUT = 10000; // 超时控制（10秒）
 
 async function fetchLatestDataFromDouban(
-    category: string,
-    type: string,
-    _tag: string,
     currentPage: number,
 ): Promise<any> {
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -223,7 +220,7 @@ async function fetchLatestDataFromDouban(
         // 通过豆瓣接口获取视频的概要信息
         const res = await fetchDoubanData(url);
         if (res && res.items?.length) {
-            // 延迟函数
+/*            // 延迟函数
             function delay(ms: number) {
                 return new Promise(resolve => setTimeout(resolve, ms));
             }
@@ -242,10 +239,10 @@ async function fetchLatestDataFromDouban(
                         return { ...video, ...video_detail } as VideoInfo;
                     })
                 )
-            );
-            await insertVideosToDB(videoInfos);
+            );*/
+            // 插入数据库
+            await insertVideosToDB(res.items);
         }
-        return res;
     } catch (error) {
         console.error('请求豆瓣 API 失败:', error);
         throw new Error('无法获取影片数据');
@@ -258,11 +255,7 @@ async function fetchDoubanData(url: string): Promise<any> {
 
     const fetchOptions: RequestInit = {
         signal: controller.signal,
-        headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
-            'Referer': 'https://movie.douban.com/',
-            'Accept': 'application/json, text/plain, */*',
-        }
+        headers: DOUBAN_API_HEADER,
     };
 
     try {
@@ -303,12 +296,15 @@ async function insertVideosToDB(videos: any[]) {
                     rating: toJsonValue(video.rating),
                     pic: toJsonValue(video.pic),
                     is_new: video.is_new ?? false,
-                    uri: video.uri ?? null,
+                    uri: video.id ?? null,  // 这里的uri存放豆瓣影片的id
                     episodes_info: video.episodes_info ?? "暂无",
                     card_subtitle: video.card_subtitle ?? null,
                     category: video.category ?? "movie",
 
                     // 🔹 新增的详细信息
+                    original_title: video.original_title?? "",
+                    intro: video.intro?? "",
+                    genres: toJsonValue(video.genres),
                     director: toJsonValue(video.director),
                     screenwriter: toJsonValue(video.screenwriter),
                     actors: toJsonValue(video.actors),
@@ -331,6 +327,9 @@ async function insertVideosToDB(videos: any[]) {
                     category: video.category ?? "movie",
 
                     // 🔹 新增的详细信息
+                    original_title: video.original_title?? "",
+                    intro: video.intro?? "",
+                    genres: toJsonValue(video.genres),
                     director: toJsonValue(video.director),
                     screenwriter: toJsonValue(video.screenwriter),
                     actors: toJsonValue(video.actors),
@@ -360,7 +359,7 @@ export async function fetchFilteredVideos(
 ): Promise<any> {
     const start = (currentPage - 1) * ITEMS_PER_PAGE || 0;
     // 从豆瓣API获取数据
-    await fetchLatestDataFromDouban(category, type, _tag, currentPage);
+    await fetchLatestDataFromDouban(currentPage);
     // 从数据库查询
     try {
         const [totalCount, videos] = await prisma.$transaction([
