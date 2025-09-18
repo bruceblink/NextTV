@@ -108,11 +108,11 @@ export class DoubanUrlUtils {
 
     /**
      * 获取豆瓣电影信息
-     * @param url
      */
-    static async fetchDoubanVideoInfo(url: string): Promise<Record<string, any>> {
+     async fetchDoubanVideoInfo(id: string): Promise<Record<string, any>> {
+        const URL =  (id: string) =>`https://movie.douban.com/subject/${id}`;
         try {
-            const response = await axios.get(url, {
+            const response = await axios.get(URL(id), {
                 headers: DOUBAN_API_HEADER,
             });
             return this.parseDoubanMovieInfo(response.data);
@@ -122,45 +122,64 @@ export class DoubanUrlUtils {
         }
     }
 
+     async fetchDoubanVideoInfoFromApi(id: string): Promise<Record<string, any>>{
+        const URL_API = (id: string) => `https://m.douban.com/rexxar/api/v2/movie/${id}`;
+        try {
+            const response = await axios.get(URL_API(id), {
+                headers: DOUBAN_API_HEADER,
+            });
+            const data = response.data;
+
+            const durations = data.durations as string[];
+            const durationsResult = durations.map(dura => {
+                const match = dura.match(/\d+/);
+                return match ? parseInt(match[0], 10) : null;
+            });
+
+            return {
+                original_title: data.original_title,
+                release_year: parseInt(data.year),
+                intro: data.intro,
+                director: data.directors,
+                language: data.languages,
+                actors: data.actors,
+                duration: durationsResult,
+                production_country: data.countries,
+                aka: data.aka
+            }
+        } catch (err) {
+            console.error("抓取失败:", err);
+            return {};
+        }
+    }
+
     /**
-     * 解析豆瓣视频详情
-     * @param html
+     * 解析豆瓣 HTML
      */
-    static parseDoubanMovieInfo(html: string): Record<string, any> {
+     parseDoubanMovieInfo(html: string): Record<string, any> {
         const $ = cheerio.load(html);
 
         const movieInfo: Record<string, any> = {
             title: $("#content h1 span[property='v:itemreviewed']").text().trim(),
-            release_year: parseInt($("#content h1 span.year").text().replace(/[()]/g, "").trim()) || null,
         };
 
         // 英文 key 的提取器
         const extractors: Record<string, () => any> = {
-            director: () =>
-                $('a[rel="v:directedBy"]')
-                    .map((_, el) => $(el).text().trim())
-                    .get(),
+            // 编剧
             screenwriter: () =>
                 $('#info span:contains("编剧") .attrs a')
                     .map((_, el) => $(el).text().trim())
                     .get(),
-            actors: () =>
-                $('a[rel="v:starring"]')
-                    .map((_, el) => $(el).text().trim())
-                    .get(),
-            type: () =>
+            // 类型
+            genres: () =>
                 $('span[property="v:genre"]')
                     .map((_, el) => $(el).text().trim())
                     .get(),
+            // 上映日期
             release_date: () =>
                 $('span[property="v:initialReleaseDate"]')
                     .map((_, el) => $(el).text().trim())
                     .get(),
-            duration: () => {
-                const runtime = $('span[property="v:runtime"]').text().trim();
-                const match = runtime.match(/\d+/); // 匹配第一个数字
-                return match ? parseInt(match[0], 10) : null;
-            },
         };
 
         // 基础字段（英文 key）
@@ -168,7 +187,7 @@ export class DoubanUrlUtils {
             movieInfo[key] = extractors[key]();
         }
 
-        // info 区域其他字段（制片国家/地区、语言、IMDb 等）
+        // info 区域其他字段（IMDb）
         $("#info .pl").each((_, el) => {
             const label = $(el).text().trim().replace(/:$/, "");
             const textNode = el.next;
@@ -176,25 +195,29 @@ export class DoubanUrlUtils {
                 textNode && textNode.type === "text" ? textNode.data.trim() : "";
 
             switch (label) {
-                case "制片国家/地区":
-                    movieInfo.production_country = value;
-                    break;
-                case "语言":
-                    movieInfo.language = value;
-                    break;
                 case "IMDb":
                     movieInfo.imdb = value;
                     break;
-                case "又名":
-                    movieInfo.aka = value;
-                    break;
                 default:
-                    // 其他暂时忽略或存储到 extra
-                    if (!movieInfo.extra) movieInfo.extra = {};
-                    movieInfo.extra[label] = value;
+                    break;
             }
         });
 
         return movieInfo;
     }
+
+    /**
+     *  根据豆瓣id过去视频详情信息
+     * @param id
+     */
+    async fetchDoubanVideoInfoById(id: string) : Promise<Record<string, any>>{
+        const [res1, res2] = await Promise.all([
+            this.fetchDoubanVideoInfo(id),
+            this.fetchDoubanVideoInfoFromApi(id),
+
+        ]);
+         // 后者的同名字段会覆盖前者
+        return {...res1, ...res2};
+    }
+
 }
