@@ -134,7 +134,7 @@ model video_info {
   pic                Json?
   is_new             Boolean?
   uri                String?
-  episodes_info      String?
+  episodes_info      String
   card_subtitle      String?
   director           Json?
   screenwriter       Json?
