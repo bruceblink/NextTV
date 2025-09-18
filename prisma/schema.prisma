@@ -130,6 +130,8 @@ model revenue {
 model video_info {
   id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title              String?  @db.VarChar(255)
+  original_title     String?
+  intro              String?
   rating             Json?
   pic                Json?
   is_new             Boolean?
@@ -141,6 +143,7 @@ model video_info {
   actors             Json?
   category           String?  @db.VarChar(128)
   type               Json?
+  genres             Json?
   production_country Json?
   language           String?  @db.VarChar(128)
   release_year       Int?
