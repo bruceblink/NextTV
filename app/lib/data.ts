@@ -210,7 +210,7 @@ export async function fetchFilteredCustomers(query: string) {
 // 配置超时的常量
 const REQUEST_TIMEOUT = 10000; // 超时控制（10秒）
 
-export async function _fetchFilteredVideos(
+async function _fetchFilteredVideos(
     category: string,
     type: string,
     _tag: string,
@@ -223,14 +223,21 @@ export async function _fetchFilteredVideos(
         // 通过豆瓣接口获取视频的概要信息
         const res = await fetchDoubanData(url);
         if (res && res.items?.length) {
+            // 延迟函数
+            function delay(ms: number) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
             // 获取概要信息中的uri
             const videos = res.items as Video[];
-            const limit = pLimit(5); // 同时最多 5 个请求
+            const limit = pLimit(3); // 同时最多 3 个请求
             // 并发执行请求
             const videoInfos: VideoInfo[] = await Promise.all(
                 videos.map(video =>
                     limit(async () => {
                         const video_url = DoubanUrlUtils.toHttps(video.uri ?? "");
+                        // 更新uri为转换后的https地址
+                        video.uri = video_url;
+                        await delay(300 + Math.random() * 700); // 加入随机延迟
                         const video_detail = await DoubanUrlUtils.fetchDoubanVideoInfo(video_url);
                         return { ...video, ...video_detail } as VideoInfo;
                     })
