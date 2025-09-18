@@ -159,9 +159,7 @@ export class DoubanUrlUtils {
      parseDoubanMovieInfo(html: string): Record<string, any> {
         const $ = cheerio.load(html);
 
-        const movieInfo: Record<string, any> = {
-            title: $("#content h1 span[property='v:itemreviewed']").text().trim(),
-        };
+        const movieInfo: Record<string, any> = {};
 
         // 英文 key 的提取器
         const extractors: Record<string, () => any> = {
