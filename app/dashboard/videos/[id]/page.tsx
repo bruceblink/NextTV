@@ -11,15 +11,10 @@ export const metadata: Metadata = {
     title: 'Video Detail',
 };
 
-export default async function Page({
-                                       params,
-                                       searchParams,
-                                   }: {
-    params: { id: string };
-    searchParams?: { doubanId?: string };
-}) {
-    const { id } = params;
-    const doubanId = searchParams?.doubanId ?? '';
+export default async function Page({ params, searchParams,} :
+   { params: Promise<{ id: string }> ; searchParams?: Promise<{ doubanId?: string }>; }) {
+    const id = (await params).id; // await params
+    const doubanId = (await searchParams)?.doubanId ?? ''; // await searchParams
 
     // 并发请求
     const [video, videoDouban] = await Promise.all([
