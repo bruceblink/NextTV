@@ -6,6 +6,7 @@ import {
 } from '@/app/lib/data';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
+import Image from "next/image";
 
 export const metadata: Metadata = {
     title: 'Video Detail',
@@ -27,10 +28,11 @@ export default async function Page({ params, searchParams,} :
         notFound();
     }
 
+    let videoDetail = {...video};
     // 如果从豆瓣获取到了视频详情数据，插入数据库
     if (videoDouban) {
-        const merged = { ...video, ...videoDouban };
-        await insertVideoToDB(merged);
+        videoDetail = { ...videoDetail, ...videoDouban };
+        await insertVideoToDB(videoDetail);
     }
 
     return (
@@ -45,6 +47,23 @@ export default async function Page({ params, searchParams,} :
                     },
                 ]}
             />
+            <h1>{videoDetail.title}</h1>
+            <div className="bg-gray-800 rounded-lg overflow-hidden w-full max-w-[250px] flex flex-col">
+                <div className="relative w-full aspect-[0.618]">
+                    <Image
+                        src={(videoDetail.pic as any).normal}
+                        alt={`${video.title}'s image`}
+                        fill
+                        className="rounded-t-lg"
+                        style={{ objectFit: 'cover', objectPosition: 'center' }}
+                    />
+                </div>
+            </div>
+            <div>
+                <span />
+                上映时间：
+                <span>{videoDetail.release_date as any}</span>
+            </div>
         </main>
     );
 }
