@@ -210,7 +210,7 @@ export async function fetchFilteredCustomers(query: string) {
 // 配置超时的常量
 const REQUEST_TIMEOUT = 10000; // 超时控制（10秒）
 
-async function _fetchFilteredVideos(
+async function fetchLatestDataFromDouban(
     category: string,
     type: string,
     _tag: string,
@@ -218,7 +218,7 @@ async function _fetchFilteredVideos(
 ): Promise<any> {
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
 
-    const url = `https://m.douban.com/rexxar/api/v2/subject/recent_hot/movie?start=${start}&limit=${ITEMS_PER_PAGE}&category=${category}&type=${type}`;
+    const url = `https://m.douban.com/rexxar/api/v2/subject/recent_hot/movie?start=${start}&limit=${ITEMS_PER_PAGE}&category=最新&type=全部&ck=sLqV`;
     try {
         // 通过豆瓣接口获取视频的概要信息
         const res = await fetchDoubanData(url);
@@ -360,7 +360,7 @@ export async function fetchFilteredVideos(
 ): Promise<any> {
     const start = (currentPage - 1) * ITEMS_PER_PAGE || 0;
     // 从豆瓣API获取数据
-    await _fetchFilteredVideos(category, type, _tag, currentPage);
+    await fetchLatestDataFromDouban(category, type, _tag, currentPage);
     // 从数据库查询
     try {
         const [totalCount, videos] = await prisma.$transaction([
