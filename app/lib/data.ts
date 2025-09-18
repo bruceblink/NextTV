@@ -6,7 +6,7 @@ import {
     InvoiceForm,
     InvoicesTable,
     LatestInvoiceRaw,
-    Revenue,
+    Revenue, Video,
 } from './definitions';
 import {DoubanUrlUtils, formatCurrency} from './utils';
 import prisma from "@/app/lib/prisma";
@@ -219,29 +219,15 @@ async function fetchLatestDataFromDouban(
     try {
         // 通过豆瓣接口获取视频的概要信息
         const res = await fetchDoubanData(url);
+
         if (res && res.items?.length) {
-/*            // 延迟函数
-            function delay(ms: number) {
-                return new Promise(resolve => setTimeout(resolve, ms));
-            }
-            // 获取概要信息中的uri
             const videos = res.items as Video[];
-            const limit = pLimit(3); // 同时最多 3 个请求
-            // 并发执行请求
-            const videoInfos: VideoInfo[] = await Promise.all(
-                videos.map(video =>
-                    limit(async () => {
-                        const video_url = DoubanUrlUtils.toHttps(video.uri ?? "");
-                        // 更新uri为转换后的https地址
-                        video.uri = video_url;
-                        await delay(300 + Math.random() * 700); // 加入随机延迟
-                        const video_detail = await DoubanUrlUtils.fetchDoubanVideoInfo(video_url);
-                        return { ...video, ...video_detail } as VideoInfo;
-                    })
-                )
-            );*/
+            // 将uri替换为豆瓣id
+            const final_videos = videos.map(video => {
+                return { ...video, uri: video.id };
+            });
             // 插入数据库
-            await insertVideosToDB(res.items);
+            await insertVideosToDB(final_videos);
         }
     } catch (error) {
         console.error('请求豆瓣 API 失败:', error);
@@ -308,7 +294,7 @@ export async function insertVideoToDB(video: any) {
                 rating: toJsonValue(video.rating),
                 pic: toJsonValue(video.pic),
                 is_new: video.is_new ?? false,
-                uri: video.id ?? null,  // 这里的uri存放豆瓣影片的id
+                uri: video.uri ?? null,  // 这里的uri存放豆瓣影片的id
                 episodes_info: video.episodes_info ?? "",
                 card_subtitle: video.card_subtitle ?? null,
                 category: video.category ?? "movie",
@@ -333,7 +319,7 @@ export async function insertVideoToDB(video: any) {
                 rating: toJsonValue(video.rating),
                 pic: toJsonValue(video.pic),
                 is_new: video.is_new ?? false,
-                uri: video.id ?? null,  // 这里的uri存放豆瓣影片的id
+                uri: video.uri ?? null,  // 这里的uri存放豆瓣影片的id
                 card_subtitle: video.card_subtitle ?? null,
                 episodes_info: video.episodes_info ?? "",
                 category: video.category ?? "movie",
