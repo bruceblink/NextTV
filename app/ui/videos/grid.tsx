@@ -38,10 +38,12 @@ export default async function VideosGrid({query, category, type, tag, currentPag
                         <h3 className="text-lg font-semibold text-white truncate">
                             {video.uri && (
                                 <Link
-                                    href={`/dashboard/videos/${video.id}`}
+                                    href={{
+                                        pathname: `/dashboard/videos/${video.id}`,
+                                        query: { doubanId: video.uri }
+                                    }}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="hover:underline"
                                 >
                                     {video.title}
                                 </Link>
