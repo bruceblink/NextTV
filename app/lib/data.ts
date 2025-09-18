@@ -1,16 +1,16 @@
 import postgres from 'postgres';
 import {
     CustomerField,
-    CustomersTableType, DOUBAN_API_HEADER,
+    CustomersTableType,
+    DOUBAN_API_HEADER,
     InvoiceForm,
     InvoicesTable,
     LatestInvoiceRaw,
-    Revenue, Video, VideoInfo,
+    Revenue,
 } from './definitions';
 import {DoubanUrlUtils, formatCurrency} from './utils';
 import prisma from "@/app/lib/prisma";
-import pLimit from "p-limit";
-import { Prisma } from "@/generated/prisma";
+import {Prisma} from "@/generated/prisma";
 
 const sql = postgres(process.env.DATABASE_URL!);
 
@@ -281,79 +281,99 @@ function toJsonValue(obj: any): Prisma.InputJsonValue {
 }
 
 // 🔹 插入数据库
-async function insertVideosToDB(videos: any[]) {
+export async function insertVideosToDB(videos: any[]) {
     for (const video of videos) {
         try {
-            await prisma.video_info.upsert({
-                where: {
-                    title_episodes_info: {
-                        title: video.title ?? null,
-                        episodes_info: video.episodes_info ?? null,
-                    },
-                },
-                create: {
-                    title: video.title ?? "",
-                    rating: toJsonValue(video.rating),
-                    pic: toJsonValue(video.pic),
-                    is_new: video.is_new ?? false,
-                    uri: video.id ?? null,  // 这里的uri存放豆瓣影片的id
-                    episodes_info: video.episodes_info ?? "暂无",
-                    card_subtitle: video.card_subtitle ?? null,
-                    category: video.category ?? "movie",
-
-                    // 🔹 新增的详细信息
-                    original_title: video.original_title?? "",
-                    intro: video.intro?? "",
-                    genres: toJsonValue(video.genres),
-                    director: toJsonValue(video.director),
-                    screenwriter: toJsonValue(video.screenwriter),
-                    actors: toJsonValue(video.actors),
-                    type: toJsonValue(video.type),
-                    production_country: toJsonValue(video.production_country),
-                    language: video.language ?? null,
-                    release_year: video.release_year ?? null,
-                    release_date: toJsonValue(video.release_date),
-                    duration: video.duration ?? null,
-                    aka: video.aka ?? null,
-                    imdb: video.imdb ?? null,
-                },
-                update: {
-                    rating: toJsonValue(video.rating),
-                    pic: toJsonValue(video.pic),
-                    is_new: video.is_new ?? false,
-                    uri: video.uri ?? null,
-                    card_subtitle: video.card_subtitle ?? null,
-                    episodes_info: video.episodes_info ?? "暂无",
-                    category: video.category ?? "movie",
-
-                    // 🔹 新增的详细信息
-                    original_title: video.original_title?? "",
-                    intro: video.intro?? "",
-                    genres: toJsonValue(video.genres),
-                    director: toJsonValue(video.director),
-                    screenwriter: toJsonValue(video.screenwriter),
-                    actors: toJsonValue(video.actors),
-                    type: toJsonValue(video.type),
-                    production_country: toJsonValue(video.production_country),
-                    language: video.language ?? null,
-                    release_year: video.release_year ?? null,
-                    release_date: toJsonValue(video.release_date),
-                    duration: video.duration ?? null,
-                    aka: video.aka ?? null,
-                    imdb: video.imdb ?? null,
-                },
-            });
+            await insertVideoToDB(video)
         } catch (err) {
             console.error("插入数据库失败:", err, video.title);
+            throw err;
         }
     }
 }
 
 
+export async function insertVideoToDB(video: any) {
+
+    try {
+        await prisma.video_info.upsert({
+            where: {
+                title_episodes_info: {
+                    title: video.title ?? "",
+                    episodes_info: video.episodes_info ?? "",
+                },
+            },
+            create: {
+                title: video.title ?? "",
+                rating: toJsonValue(video.rating),
+                pic: toJsonValue(video.pic),
+                is_new: video.is_new ?? false,
+                uri: video.id ?? null,  // 这里的uri存放豆瓣影片的id
+                episodes_info: video.episodes_info ?? "",
+                card_subtitle: video.card_subtitle ?? null,
+                category: video.category ?? "movie",
+
+                // 🔹 新增的详细信息
+                original_title: video.original_title?? "",
+                intro: video.intro?? "",
+                genres: toJsonValue(video.genres),
+                director: toJsonValue(video.director),
+                screenwriter: toJsonValue(video.screenwriter),
+                actors: toJsonValue(video.actors),
+                type: toJsonValue(video.type),
+                production_country: toJsonValue(video.production_country),
+                language: toJsonValue(video.language),
+                release_year: video.release_year ?? null,
+                release_date: toJsonValue(video.release_date),
+                duration: toJsonValue(video.duration),
+                aka: toJsonValue(video.aka),
+                imdb: video.imdb ?? null,
+            },
+            update: {
+                rating: toJsonValue(video.rating),
+                pic: toJsonValue(video.pic),
+                is_new: video.is_new ?? false,
+                uri: video.id ?? null,  // 这里的uri存放豆瓣影片的id
+                card_subtitle: video.card_subtitle ?? null,
+                episodes_info: video.episodes_info ?? "",
+                category: video.category ?? "movie",
+
+                // 🔹 新增的详细信息
+                original_title: video.original_title?? "",
+                intro: video.intro?? "",
+                genres: toJsonValue(video.genres),
+                director: toJsonValue(video.director),
+                screenwriter: toJsonValue(video.screenwriter),
+                actors: toJsonValue(video.actors),
+                type: toJsonValue(video.type),
+                production_country: toJsonValue(video.production_country),
+                language: toJsonValue(video.language),
+                release_year: video.release_year ?? null,
+                release_date: toJsonValue(video.release_date),
+                duration: toJsonValue(video.duration),
+                aka: toJsonValue(video.aka),
+                imdb: video.imdb ?? null,
+            },
+        });
+    } catch (err) {
+        console.error("插入数据库失败:", err, video.title);
+        throw err;
+    }
+}
+
+
+/**
+ *  查询最新电影资讯
+ * @param query
+ * @param category
+ * @param _type
+ * @param _tag
+ * @param currentPage
+ */
 export async function fetchFilteredVideos(
     query: string,
     category: string,
-    type: string,
+    _type: string,
     _tag: string,
     currentPage: number,
 ): Promise<any> {
@@ -394,5 +414,33 @@ export async function fetchFilteredVideos(
         return { totalCount, videos };
     } catch (err) {
         console.error("查询数据库失败:", err);
+    }
+}
+
+export async function fetchVideoInfoById(id: string) {
+    try {
+        return await prisma.video_info.findUnique({
+            where: {
+                id: id,
+            },
+        });
+    } catch (error) {
+        console.error('Database Error:', error);
+        throw new Error('Failed to fetch video.');
+    }
+}
+
+
+export async function fetchDoubanDataById(douban_id: string): Promise<any> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+
+    try {
+        const ut = new DoubanUrlUtils();
+        return await ut.fetchDoubanVideoInfoById(douban_id);
+    } catch (error) {
+        clearTimeout(timeoutId); // 确保清除超时
+        console.error("豆瓣 API 请求失败: ", error);
+        return {};
     }
 }
