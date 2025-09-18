@@ -145,7 +145,7 @@ model video_info {
   type               Json?
   genres             Json?
   production_country Json?
-  language           String?  @db.VarChar(128)
+  language           Json?
   release_year       Int?
   release_date       Json?
   duration           Int?
