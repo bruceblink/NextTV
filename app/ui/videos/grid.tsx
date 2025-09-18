@@ -1,7 +1,7 @@
 import { fetchFilteredVideos } from '@/app/lib/data';
 import Image from "next/image";
 import { Video } from "@/app/lib/definitions";
-import {DoubanUrlUtils} from "@/app/lib/utils";
+import Link from "next/link";
 
 export default async function VideosGrid({query, category, type, tag, currentPage,}: {query: string; category: string; type: string; tag: string; currentPage: number; }) {
     // 获取video信息列表
@@ -37,14 +37,14 @@ export default async function VideosGrid({query, category, type, tag, currentPag
                     <div className="p-3 flex flex-col gap-1">
                         <h3 className="text-lg font-semibold text-white truncate">
                             {video.uri && (
-                                <a
-                                    href={DoubanUrlUtils.toHttps(video.uri)}
+                                <Link
+                                    href={`/dashboard/videos/${video.id}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="hover:underline"
                                 >
                                     {video.title}
-                                </a>
+                                </Link>
                             )}
                         </h3>
                         {video.rating && (
