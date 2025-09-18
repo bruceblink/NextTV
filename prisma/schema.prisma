@@ -127,32 +127,36 @@ model revenue {
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model video_info {
   id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  title              String?  @db.VarChar(255)
-  original_title     String?
-  intro              String?
+  title              String   @db.VarChar(255)
   rating             Json?
   pic                Json?
   is_new             Boolean?
   uri                String?
-  episodes_info      String
+  episodes_info      String   @default("")
   card_subtitle      String?
   director           Json?
   screenwriter       Json?
   actors             Json?
   category           String?  @db.VarChar(128)
   type               Json?
-  genres             Json?
   production_country Json?
   language           Json?
-  release_year       Int?
+  release_year       Int?     @db.SmallInt
   release_date       Json?
-  duration           Int?
+  duration           Json?
   aka                String?  @db.VarChar(255)
   imdb               String?  @db.VarChar(64)
   created_at         DateTime @default(now()) @db.Timestamptz(6)
   updated_at         DateTime @default(now()) @db.Timestamptz(6)
+  original_title     String?  @db.VarChar(255)
+  intro              String?
+  genres             Json?
 
   @@unique([title, episodes_info], map: "uniq_video_info")
+  @@index([category], map: "idx_video_info_category")
+  @@index([release_year], map: "idx_video_info_release_year")
+  @@index([title], map: "idx_video_info_title")
 }

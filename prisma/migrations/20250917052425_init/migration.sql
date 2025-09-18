@@ -1,7 +1,7 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- CreateTable
-CREATE TABLE "public"."customers"
+CREATE TABLE IF NOT EXISTS "public"."customers"
 (
     "id"        UUID         NOT NULL DEFAULT uuid_generate_v4(),
     "name"      VARCHAR(255) NOT NULL,
@@ -12,7 +12,7 @@ CREATE TABLE "public"."customers"
 );
 
 -- CreateTable
-CREATE TABLE "public"."invoices"
+CREATE TABLE IF NOT EXISTS "public"."invoices"
 (
     "id"          UUID         NOT NULL DEFAULT uuid_generate_v4(),
     "customer_id" UUID         NOT NULL,
@@ -24,7 +24,7 @@ CREATE TABLE "public"."invoices"
 );
 
 -- CreateTable
-CREATE TABLE "public"."revenue"
+CREATE TABLE IF NOT EXISTS "public"."revenue"
 (
     "month"   VARCHAR(4) NOT NULL,
     "revenue" INTEGER    NOT NULL
