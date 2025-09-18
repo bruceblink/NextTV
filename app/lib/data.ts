@@ -280,7 +280,6 @@ export async function insertVideosToDB(videos: any[]) {
 
 
 export async function insertVideoToDB(video: any) {
-
     try {
         await prisma.video_info.upsert({
             where: {
@@ -294,14 +293,14 @@ export async function insertVideoToDB(video: any) {
                 rating: toJsonValue(video.rating),
                 pic: toJsonValue(video.pic),
                 is_new: video.is_new ?? false,
-                uri: video.uri ?? null,  // 这里的uri存放豆瓣影片的id
+                uri: video.uri ?? null,
                 episodes_info: video.episodes_info ?? "",
                 card_subtitle: video.card_subtitle ?? null,
                 category: video.category ?? "movie",
 
-                // 🔹 新增的详细信息
-                original_title: video.original_title?? "",
-                intro: video.intro?? "",
+                // 详细信息
+                original_title: video.original_title ?? "",
+                intro: video.intro ?? "",
                 genres: toJsonValue(video.genres),
                 director: toJsonValue(video.director),
                 screenwriter: toJsonValue(video.screenwriter),
@@ -316,29 +315,29 @@ export async function insertVideoToDB(video: any) {
                 imdb: video.imdb ?? null,
             },
             update: {
-                rating: toJsonValue(video.rating),
-                pic: toJsonValue(video.pic),
+                ...(video.rating !== undefined && { rating: toJsonValue(video.rating) }),
+                ...(video.pic !== undefined && { pic: toJsonValue(video.pic) }),
                 is_new: video.is_new ?? false,
-                uri: video.uri ?? null,  // 这里的uri存放豆瓣影片的id
-                card_subtitle: video.card_subtitle ?? null,
-                episodes_info: video.episodes_info ?? "",
-                category: video.category ?? "movie",
+                ...(video.uri !== undefined && { uri: video.uri }),
+                ...(video.episodes_info !== undefined && { episodes_info: video.episodes_info }),
+                ...(video.card_subtitle !== undefined && { card_subtitle: video.card_subtitle }),
+                ...(video.category !== undefined && { category: video.category }),
 
-                // 🔹 新增的详细信息
-                original_title: video.original_title?? "",
-                intro: video.intro?? "",
-                genres: toJsonValue(video.genres),
-                director: toJsonValue(video.director),
-                screenwriter: toJsonValue(video.screenwriter),
-                actors: toJsonValue(video.actors),
-                type: toJsonValue(video.type),
-                production_country: toJsonValue(video.production_country),
-                language: toJsonValue(video.language),
-                release_year: video.release_year ?? null,
-                release_date: toJsonValue(video.release_date),
-                duration: toJsonValue(video.duration),
-                aka: toJsonValue(video.aka),
-                imdb: video.imdb ?? null,
+                // 详细信息
+                ...(video.original_title !== undefined && { original_title: video.original_title }),
+                ...(video.intro !== undefined && { intro: video.intro }),
+                ...(video.genres !== undefined && { genres: toJsonValue(video.genres) }),
+                ...(video.director !== undefined && { director: toJsonValue(video.director) }),
+                ...(video.screenwriter !== undefined && { screenwriter: toJsonValue(video.screenwriter) }),
+                ...(video.actors !== undefined && { actors: toJsonValue(video.actors) }),
+                ...(video.type !== undefined && { type: toJsonValue(video.type) }),
+                ...(video.production_country !== undefined && { production_country: toJsonValue(video.production_country) }),
+                ...(video.language !== undefined && { language: toJsonValue(video.language) }),
+                ...(video.release_year !== undefined && { release_year: video.release_year }),
+                ...(video.release_date !== undefined && { release_date: toJsonValue(video.release_date) }),
+                ...(video.duration !== undefined && { duration: toJsonValue(video.duration) }),
+                ...(video.aka !== undefined && { aka: video.aka }),
+                ...(video.imdb !== undefined && { imdb: video.imdb }),
             },
         });
     } catch (err) {
