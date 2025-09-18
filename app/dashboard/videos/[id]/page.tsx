@@ -27,14 +27,15 @@ export default async function Page({
         doubanId ? fetchDoubanDataById(doubanId) : Promise.resolve(null),
     ]);
 
-    // 如果从豆瓣获取到了数据，插入数据库
-    if (videoDouban) {
-        await insertVideoToDB(videoDouban);
-    }
-
     // 如果本地数据库没有视频，直接 404
     if (!video) {
         notFound();
+    }
+
+    // 如果从豆瓣获取到了视频详情数据，插入数据库
+    if (videoDouban) {
+        const merged = { ...video, ...videoDouban };
+        await insertVideoToDB(merged);
     }
 
     return (
