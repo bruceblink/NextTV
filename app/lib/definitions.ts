@@ -114,10 +114,13 @@ export type BaseVideo  = {
 export type Video = BaseVideo;
 
 export type VideoInfo = BaseVideo & {
+    original_title: string
+    intro: string;
     director: JSON;
     screenwriter?: JSON;
     actors?: JSON;
     type?: JSON;
+    genres?: JSON;
     production_country?: JSON;
     language?: string;
     release_year?: number;
