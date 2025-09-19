@@ -10,7 +10,7 @@ export default async function VideosGrid({query, category, type, tag, currentPag
 
     return (
         <div
-            className="grid gap-6 p-6 mx-auto"
+            className="grid gap-6 p-6 mt-4 mx-auto"
             style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', // 自适应列数
