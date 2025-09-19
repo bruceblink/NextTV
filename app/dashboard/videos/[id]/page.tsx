@@ -1,12 +1,12 @@
 import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
 import {
     fetchVideoInfoById,
-    fetchDoubanDataById,
     upsertVideoToDB,
 } from '@/app/lib/data';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import Image from "next/image";
+import {fetchDoubanDataById} from "@/app/lib/douban";
 
 export const metadata: Metadata = {
     title: 'Video Detail',
