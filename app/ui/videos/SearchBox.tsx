@@ -72,7 +72,7 @@ export default function SearchBox() {
     };
 
     return (
-        <div className="w-full max-w-2xl mx-auto p-4 space-y-6">
+        <div className="w-full max-w-2xl mx-auto space-y-6">
             {/* 搜索框 */}
             <div className="flex items-center border rounded-2xl px-3 py-2 shadow-sm">
                 <input
