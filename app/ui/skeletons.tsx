@@ -222,12 +222,14 @@ export function InvoicesTableSkeleton() {
 export function VideosGridSkeleton() {
     return (
         <div
-            className="grid gap-6 p-6"
+            className="grid gap-6 p-6 mx-auto"
             style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', // 自适应列数
+                gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', // 自适应列数
+                maxWidth: "calc(9 * 150px + 9 * 1.5rem)", // 容纳正好8列
                 justifyItems: 'center',
-            }}>
+            }}
+        >
             <GridSkeleton/>
             <GridSkeleton/>
             <GridSkeleton/>
