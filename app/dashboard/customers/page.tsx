@@ -3,23 +3,23 @@ import CustomersTable from '@/app/ui/customers/table';
 import {Metadata} from 'next';
 
 export const metadata: Metadata = {
-  title: 'Customers',
+    title: 'Customers',
 };
 
 export default async function Page(props: {
-  searchParams?: Promise<{
-    query?: string;
-    page?: string;
-  }>;
+    searchParams?: Promise<{
+        query?: string;
+        page?: string;
+    }>;
 }) {
-  const searchParams = await props.searchParams;
-  const query = searchParams?.query || '';
+    const searchParams = await props.searchParams;
+    const query = searchParams?.query || '';
 
-  const customers = await fetchFilteredCustomers(query);
+    const customers = await fetchFilteredCustomers(query);
 
-  return (
-      <main>
-        <CustomersTable customers={customers}/>
-      </main>
-  );
+    return (
+        <main>
+            <CustomersTable customers={customers}/>
+        </main>
+    );
 }

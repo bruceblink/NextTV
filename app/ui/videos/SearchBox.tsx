@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { X, Search } from 'lucide-react';
+import {useEffect, useState} from 'react';
+import {useRouter} from 'next/navigation';
+import {Search, X} from 'lucide-react';
 
 const CATEGORY_MAP: Map<string, string> = new Map([
     ['电影', 'movie'],
@@ -81,13 +81,13 @@ export default function SearchBox() {
                     placeholder="搜索影片、电视剧、动漫..."
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSearch({ query, page: 1 })}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearch({query, page: 1})}
                 />
                 <button
-                    onClick={() => handleSearch({ query, page: 1 })}
+                    onClick={() => handleSearch({query, page: 1})}
                     className="ml-2 bg-blue-500 text-white px-3 py-1 rounded-xl flex items-center text-sm"
                 >
-                    <Search className="w-4 h-4 mr-1" />
+                    <Search className="w-4 h-4 mr-1"/>
                     搜索
                 </button>
             </div>
@@ -102,7 +102,7 @@ export default function SearchBox() {
                                 key={item}
                                 className="flex items-center bg-gray-100 px-3 py-1 rounded-full text-sm cursor-pointer hover:bg-gray-200"
                             >
-                                <span onClick={() => handleSearch({ query: item, page: 1 })}>{item}</span>
+                                <span onClick={() => handleSearch({query: item, page: 1})}>{item}</span>
                                 <X
                                     className="w-3 h-3 ml-2 cursor-pointer text-gray-500 hover:text-red-500"
                                     onClick={() => removeSearch(item)}
@@ -120,7 +120,7 @@ export default function SearchBox() {
                     {Array.from(CATEGORY_MAP.entries()).map(([label, categoryValue]) => (
                         <button
                             key={label}
-                            onClick={() => handleSearch({ category: categoryValue, page: 1 })}
+                            onClick={() => handleSearch({category: categoryValue, page: 1})}
                             className={`px-4 py-1 rounded-full text-sm whitespace-nowrap ${
                                 selectedCategory === label
                                     ? 'bg-blue-500 text-white'
@@ -140,7 +140,7 @@ export default function SearchBox() {
                     {HOT_TAGS.map((tag) => (
                         <button
                             key={tag}
-                            onClick={() => handleSearch({ tag, page: 1 })}
+                            onClick={() => handleSearch({tag, page: 1})}
                             className={`px-4 py-1 rounded-full text-sm whitespace-nowrap ${
                                 selectedTag === tag
                                     ? 'bg-blue-500 text-white'

@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import {useState} from 'react';
 
 const FILTERS = {
     category: ['全部类型', '偶像', '爱情', '言情', '古装', '历史', '玄幻', '谍战', '历险', '都市', '科幻', '军旅', '喜剧', '武侠', '江湖', '罪案', '青春', '家庭', '战争'],
@@ -22,7 +22,7 @@ export default function FilterBox() {
     });
 
     const handleClick = (key: string, value: string) => {
-        setSelectedFilters((prev) => ({ ...prev, [key]: value }));
+        setSelectedFilters((prev) => ({...prev, [key]: value}));
         // TODO: 可以在这里触发搜索请求
     };
 

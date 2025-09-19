@@ -244,16 +244,16 @@ export function VideosGridSkeleton() {
 
 export function GridSkeleton() {
     return (
-            <div className="bg-gray-100 rounded-lg overflow-hidden w-full max-w-[400px] flex flex-col">
-                <div className="relative w-full aspect-[0.618]">
-                </div>
-                {/* 文字部分 */}
-                <div className="p-3 flex flex-col gap-1">
-                    <h3 className="text-lg font-semibold text-white truncate"></h3>
-                    <h4 className="text-sm font-medium text-yellow-400 truncate"></h4>
-                    <p className="text-xs text-gray-100 truncate"></p>
-
-                </div>
+        <div className="bg-gray-100 rounded-lg overflow-hidden w-full max-w-[400px] flex flex-col">
+            <div className="relative w-full aspect-[0.618]">
             </div>
+            {/* 文字部分 */}
+            <div className="p-3 flex flex-col gap-1">
+                <h3 className="text-lg font-semibold text-white truncate"></h3>
+                <h4 className="text-sm font-medium text-yellow-400 truncate"></h4>
+                <p className="text-xs text-gray-100 truncate"></p>
+
+            </div>
+        </div>
     );
 }

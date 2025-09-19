@@ -1,16 +1,9 @@
 import postgres from 'postgres';
-import {
-    CustomerField,
-    CustomersTableType,
-    InvoiceForm,
-    InvoicesTable,
-    LatestInvoiceRaw,
-    Revenue,
-} from './definitions';
-import { formatCurrency } from './utils';
+import {CustomerField, CustomersTableType, InvoiceForm, InvoicesTable, LatestInvoiceRaw, Revenue,} from './definitions';
+import {formatCurrency} from './utils';
 import prisma from "@/app/lib/prisma";
-import { Prisma } from "@/generated/prisma";
-import { fetchLatestDataFromDouban } from "@/app/lib/douban";
+import {Prisma} from "@/generated/prisma";
+import {fetchLatestDataFromDouban} from "@/app/lib/douban";
 
 const sql = postgres(process.env.DATABASE_URL!);
 
@@ -32,11 +25,10 @@ export async function fetchRevenue() {
 export async function fetchLatestInvoices() {
     try {
         const data = await sql<LatestInvoiceRaw[]>`
-      SELECT invoices.amount, customers.name, customers.image_url, customers.email, invoices.id
-      FROM invoices
-      JOIN customers ON invoices.customer_id = customers.id
-      ORDER BY invoices.date DESC
-      LIMIT 5`;
+            SELECT invoices.amount, customers.name, customers.image_url, customers.email, invoices.id
+            FROM invoices
+                     JOIN customers ON invoices.customer_id = customers.id
+            ORDER BY invoices.date DESC LIMIT 5`;
 
         return data.map((invoice) => ({
             ...invoice,
@@ -57,10 +49,9 @@ export async function fetchCardData() {
                                         FROM invoices`;
         const customerCountPromise = sql`SELECT COUNT(*)
                                          FROM customers`;
-        const invoiceStatusPromise = sql`SELECT
-         SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) AS "paid",
-         SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) AS "pending"
-         FROM invoices`;
+        const invoiceStatusPromise = sql`SELECT SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END)    AS "paid",
+                                                SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) AS "pending"
+                                         FROM invoices`;
 
         const data = await Promise.all([
             invoiceCountPromise,
@@ -95,25 +86,28 @@ export async function fetchFilteredInvoices(
 
     try {
         return await sql<InvoicesTable[]>`
-      SELECT
-        invoices.id,
-        invoices.amount,
-        invoices.date,
-        invoices.status,
-        customers.name,
-        customers.email,
-        customers.image_url
-      FROM invoices
-      JOIN customers ON invoices.customer_id = customers.id
-      WHERE
-        customers.name ILIKE ${`%${query}%`} OR
-        customers.email ILIKE ${`%${query}%`} OR
-        invoices.amount::text ILIKE ${`%${query}%`} OR
-        invoices.date::text ILIKE ${`%${query}%`} OR
-        invoices.status ILIKE ${`%${query}%`}
-      ORDER BY invoices.date DESC
-      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
-    `;
+            SELECT invoices.id,
+                   invoices.amount,
+                   invoices.date,
+                   invoices.status,
+                   customers.name,
+                   customers.email,
+                   customers.image_url
+            FROM invoices
+                     JOIN customers ON invoices.customer_id = customers.id
+            WHERE customers.name ILIKE ${`%${query}%`}
+               OR
+                customers.email ILIKE ${`%${query}%`}
+               OR
+                invoices.amount::text ILIKE ${`%${query}%`}
+               OR
+                invoices.date::text ILIKE ${`%${query}%`}
+               OR
+                invoices.status ILIKE ${`%${query}%`}
+            ORDER BY invoices.date DESC
+                LIMIT ${ITEMS_PER_PAGE}
+            OFFSET ${offset}
+        `;
     } catch (error) {
         console.error('Database Error:', error);
         throw new Error('Failed to fetch invoices.');
@@ -123,15 +117,18 @@ export async function fetchFilteredInvoices(
 export async function fetchInvoicesPages(query: string) {
     try {
         const data = await sql`SELECT COUNT(*)
-    FROM invoices
-    JOIN customers ON invoices.customer_id = customers.id
-    WHERE
-      customers.name ILIKE ${`%${query}%`} OR
-      customers.email ILIKE ${`%${query}%`} OR
-      invoices.amount::text ILIKE ${`%${query}%`} OR
-      invoices.date::text ILIKE ${`%${query}%`} OR
-      invoices.status ILIKE ${`%${query}%`}
-  `;
+                               FROM invoices
+                                        JOIN customers ON invoices.customer_id = customers.id
+                               WHERE customers.name ILIKE ${`%${query}%`}
+                                  OR
+                                   customers.email ILIKE ${`%${query}%`}
+                                  OR
+                                   invoices.amount::text ILIKE ${`%${query}%`}
+                                  OR
+                                   invoices.date::text ILIKE ${`%${query}%`}
+                                  OR
+                                   invoices.status ILIKE ${`%${query}%`}
+        `;
 
         return Math.ceil(Number(data[0].count) / ITEMS_PER_PAGE);
     } catch (error) {
@@ -143,14 +140,13 @@ export async function fetchInvoicesPages(query: string) {
 export async function fetchInvoiceById(id: string) {
     try {
         const data = await sql<InvoiceForm[]>`
-      SELECT
-        invoices.id,
-        invoices.customer_id,
-        invoices.amount,
-        invoices.status
-      FROM invoices
-      WHERE invoices.id = ${id};
-    `;
+            SELECT invoices.id,
+                   invoices.customer_id,
+                   invoices.amount,
+                   invoices.status
+            FROM invoices
+            WHERE invoices.id = ${id};
+        `;
 
         const invoice = data.map((invoice) => ({
             ...invoice,
@@ -168,11 +164,11 @@ export async function fetchInvoiceById(id: string) {
 export async function fetchCustomers() {
     try {
         return await sql<CustomerField[]>`
-      SELECT id,
-             name
-      FROM customers
-      ORDER BY name
-    `;
+            SELECT id,
+                   name
+            FROM customers
+            ORDER BY name
+        `;
     } catch (err) {
         console.error('Database Error:', err);
         throw new Error('Failed to fetch all customers.');
@@ -182,20 +178,20 @@ export async function fetchCustomers() {
 export async function fetchFilteredCustomers(query: string) {
     try {
         const data = await sql<CustomersTableType[]>`
-      SELECT customers.id,
-             customers.name,
-             customers.email,
-             customers.image_url,
-             COUNT(invoices.id)                                                         AS total_invoices,
-             SUM(CASE WHEN invoices.status = 'pending' THEN invoices.amount ELSE 0 END) AS total_pending,
-             SUM(CASE WHEN invoices.status = 'paid' THEN invoices.amount ELSE 0 END)    AS total_paid
-      FROM customers
-             LEFT JOIN invoices ON customers.id = invoices.customer_id
-      WHERE customers.name ILIKE ${`%${query}%`}
-         OR customers.email ILIKE ${`%${query}%`}
-      GROUP BY customers.id, customers.name, customers.email, customers.image_url
-      ORDER BY customers.name
-    `;
+            SELECT customers.id,
+                   customers.name,
+                   customers.email,
+                   customers.image_url,
+                   COUNT(invoices.id)                                                         AS total_invoices,
+                   SUM(CASE WHEN invoices.status = 'pending' THEN invoices.amount ELSE 0 END) AS total_pending,
+                   SUM(CASE WHEN invoices.status = 'paid' THEN invoices.amount ELSE 0 END)    AS total_paid
+            FROM customers
+                     LEFT JOIN invoices ON customers.id = invoices.customer_id
+            WHERE customers.name ILIKE ${`%${query}%`}
+               OR customers.email ILIKE ${`%${query}%`}
+            GROUP BY customers.id, customers.name, customers.email, customers.image_url
+            ORDER BY customers.name
+        `;
 
         return data.map((customer) => ({
             ...customer,
@@ -255,7 +251,6 @@ export async function insertVideosToDB(videos: any[]) {
 }
 
 
-
 /**
  * 插入更新单挑video信息
  * @param video
@@ -296,29 +291,29 @@ export async function upsertVideoToDB(video: any) {
                 imdb: video.imdb ?? null,
             },
             update: {
-                ...(video.rating !== undefined && { rating: toJsonValue(video.rating) }),
-                ...(video.pic !== undefined && { pic: toJsonValue(video.pic) }),
+                ...(video.rating !== undefined && {rating: toJsonValue(video.rating)}),
+                ...(video.pic !== undefined && {pic: toJsonValue(video.pic)}),
                 is_new: video.is_new ?? false,
-                ...(video.uri !== undefined && { uri: video.uri }),
-                ...(video.episodes_info !== undefined && { episodes_info: video.episodes_info }),
-                ...(video.card_subtitle !== undefined && { card_subtitle: video.card_subtitle }),
-                ...(video.category !== undefined && { category: video.category }),
+                ...(video.uri !== undefined && {uri: video.uri}),
+                ...(video.episodes_info !== undefined && {episodes_info: video.episodes_info}),
+                ...(video.card_subtitle !== undefined && {card_subtitle: video.card_subtitle}),
+                ...(video.category !== undefined && {category: video.category}),
 
                 // 详细信息
-                ...(video.original_title !== undefined && { original_title: video.original_title }),
-                ...(video.intro !== undefined && { intro: video.intro }),
-                ...(video.genres !== undefined && { genres: toJsonValue(video.genres) }),
-                ...(video.director !== undefined && { director: toJsonValue(video.director) }),
-                ...(video.screenwriter !== undefined && { screenwriter: toJsonValue(video.screenwriter) }),
-                ...(video.actors !== undefined && { actors: toJsonValue(video.actors) }),
-                ...(video.type !== undefined && { type: toJsonValue(video.type) }),
-                ...(video.production_country !== undefined && { production_country: toJsonValue(video.production_country) }),
-                ...(video.language !== undefined && { language: toJsonValue(video.language) }),
-                ...(video.release_year !== undefined && { release_year: video.release_year }),
-                ...(video.release_date !== undefined && { release_date: toJsonValue(video.release_date) }),
-                ...(video.duration !== undefined && { duration: toJsonValue(video.duration) }),
-                ...(video.aka !== undefined && { aka: video.aka }),
-                ...(video.imdb !== undefined && { imdb: video.imdb }),
+                ...(video.original_title !== undefined && {original_title: video.original_title}),
+                ...(video.intro !== undefined && {intro: video.intro}),
+                ...(video.genres !== undefined && {genres: toJsonValue(video.genres)}),
+                ...(video.director !== undefined && {director: toJsonValue(video.director)}),
+                ...(video.screenwriter !== undefined && {screenwriter: toJsonValue(video.screenwriter)}),
+                ...(video.actors !== undefined && {actors: toJsonValue(video.actors)}),
+                ...(video.type !== undefined && {type: toJsonValue(video.type)}),
+                ...(video.production_country !== undefined && {production_country: toJsonValue(video.production_country)}),
+                ...(video.language !== undefined && {language: toJsonValue(video.language)}),
+                ...(video.release_year !== undefined && {release_year: video.release_year}),
+                ...(video.release_date !== undefined && {release_date: toJsonValue(video.release_date)}),
+                ...(video.duration !== undefined && {duration: toJsonValue(video.duration)}),
+                ...(video.aka !== undefined && {aka: video.aka}),
+                ...(video.imdb !== undefined && {imdb: video.imdb}),
             },
         });
     } catch (err) {
@@ -353,20 +348,20 @@ export async function fetchFilteredVideos(
                 where: {
                     AND: [
                         // 模糊匹配标题
-                        query ? { title: { contains: query, mode: 'insensitive' } } : {},
+                        query ? {title: {contains: query, mode: 'insensitive'}} : {},
                         // 精确匹配分类
-                        category ? { card_subtitle: { contains: category, mode: 'insensitive' } } : {},
+                        category ? {card_subtitle: {contains: category, mode: 'insensitive'}} : {},
                         // 标签（假设你存储在 episodes_info 或 tag 字段里）
-                        _tag ? { episodes_info: { contains: _tag } } : {},
+                        _tag ? {episodes_info: {contains: _tag}} : {},
                     ],
                 },
             }),
             prisma.video_info.findMany({
                 where: {
                     AND: [
-                        query ? { title: { contains: query, mode: 'insensitive' } } : {},
-                        category ? { card_subtitle: category } : {},
-                        _tag ? { episodes_info: { contains: _tag } } : {},
+                        query ? {title: {contains: query, mode: 'insensitive'}} : {},
+                        category ? {card_subtitle: category} : {},
+                        _tag ? {episodes_info: {contains: _tag}} : {},
                     ],
                 },
                 skip: start,
@@ -377,7 +372,7 @@ export async function fetchFilteredVideos(
             }),
         ]);
 
-        return { totalCount, videos };
+        return {totalCount, videos};
     } catch (err) {
         console.error("查询数据库失败:", err);
     }

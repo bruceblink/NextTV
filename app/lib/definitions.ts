@@ -74,7 +74,7 @@ export type InvoiceForm = {
     status: 'pending' | 'paid';
 };
 
-export type BaseVideo  = {
+export type BaseVideo = {
     id: string;               // id
     title: string;            // 标题
     rating?: {                // 评分

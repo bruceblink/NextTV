@@ -1,9 +1,9 @@
 import Pagination from '@/app/ui/invoices/pagination';
 import Grid from '@/app/ui/videos/grid';
-import { lusitana } from '@/app/ui/fonts';
-import { Suspense } from 'react';
-import { Metadata } from 'next';
-import { ITEMS_PER_PAGE } from '@/app/lib/data';
+import {lusitana} from '@/app/ui/fonts';
+import {Suspense} from 'react';
+import {Metadata} from 'next';
+import {ITEMS_PER_PAGE} from '@/app/lib/data';
 import SearchBox from '@/app/ui/videos/SearchBox';
 import {VideosGridSkeleton} from "@/app/ui/skeletons";
 
@@ -13,8 +13,8 @@ export const metadata: Metadata = {
 
 export default async function Page(props: {
     searchParams?: Promise<{
-        query?:string;
-        category?:string;
+        query?: string;
+        category?: string;
         type?: string;
         tag?: string;
         page?: string;
@@ -37,11 +37,11 @@ export default async function Page(props: {
                 <h1 className={`${lusitana.className} text-2xl`}>Videos</h1>
             </div>
             <div className="flex items-center justify-between gap-2 ">
-                <SearchBox />
+                <SearchBox/>
             </div>
 
             <Suspense key={type + tag + currentPage} fallback={<VideosGridSkeleton/>}>
-                <Grid query ={query} category={category} type={type} tag={tag} currentPage={currentPage} />
+                <Grid query={query} category={category} type={type} tag={tag} currentPage={currentPage}/>
             </Suspense>
             <div className="mt-5 flex w-full justify-center">
                 <Pagination totalPages={totalPages}/>

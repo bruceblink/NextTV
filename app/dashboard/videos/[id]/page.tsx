@@ -1,10 +1,7 @@
 import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
-import {
-    fetchVideoInfoById,
-    upsertVideoToDB,
-} from '@/app/lib/data';
-import { notFound } from 'next/navigation';
-import { Metadata } from 'next';
+import {fetchVideoInfoById, upsertVideoToDB,} from '@/app/lib/data';
+import {notFound} from 'next/navigation';
+import {Metadata} from 'next';
 import Image from "next/image";
 import {fetchDoubanDataById} from "@/app/lib/douban";
 
@@ -12,8 +9,11 @@ export const metadata: Metadata = {
     title: 'Video Detail',
 };
 
-export default async function Page({ params, searchParams,} :
-   { params: Promise<{ id: string }> ; searchParams?: Promise<{ doubanId?: string }>; }) {
+export default async function Page({params, searchParams,}:
+                                   {
+                                       params: Promise<{ id: string }>;
+                                       searchParams?: Promise<{ doubanId?: string }>;
+                                   }) {
     const id = (await params).id; // await params
     const doubanId = (await searchParams)?.doubanId ?? ''; // await searchParams
 
@@ -31,7 +31,7 @@ export default async function Page({ params, searchParams,} :
     let videoDetail = {...video};
     // 如果从豆瓣获取到了视频详情数据，插入数据库
     if (videoDouban) {
-        videoDetail = { ...videoDetail, ...videoDouban };
+        videoDetail = {...videoDetail, ...videoDouban};
         await upsertVideoToDB(videoDetail);
     }
 
@@ -39,7 +39,7 @@ export default async function Page({ params, searchParams,} :
         <main>
             <Breadcrumbs
                 breadcrumbs={[
-                    { label: 'Videos', href: '/dashboard/videos' },
+                    {label: 'Videos', href: '/dashboard/videos'},
                     {
                         label: 'Video Detail',
                         href: `/dashboard/videos/${id}`,
@@ -55,12 +55,12 @@ export default async function Page({ params, searchParams,} :
                         alt={`${video.title}'s image`}
                         fill
                         className="rounded-t-lg"
-                        style={{ objectFit: 'cover', objectPosition: 'center' }}
+                        style={{objectFit: 'cover', objectPosition: 'center'}}
                     />
                 </div>
             </div>
             <div>
-                <span />
+                <span/>
                 上映时间：
                 <span>{videoDetail.release_date as any}</span>
             </div>

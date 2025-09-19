@@ -1,4 +1,3 @@
-
 // 配置超时的常量
 import {insertVideosToDB, ITEMS_PER_PAGE} from "@/app/lib/data";
 import {DOUBAN_API_HEADER, Video} from "@/app/lib/definitions";
@@ -29,7 +28,7 @@ export async function fetchLatestDataFromDouban(
             const videos = res.items as Video[];
             // 将uri替换为豆瓣id
             const final_videos = videos.map(video => {
-                return { ...video, uri: video.id };
+                return {...video, uri: video.id};
             });
             // 插入数据库
             await insertVideosToDB(final_videos);
@@ -83,7 +82,7 @@ export async function fetchDoubanDataById(douban_id: string): Promise<any> {
  * 获取豆瓣电影信息
  */
 async function fetchDoubanVideoInfo(id: string): Promise<Record<string, any>> {
-    const URL =  (id: string) =>`https://movie.douban.com/subject/${id}`;
+    const URL = (id: string) => `https://movie.douban.com/subject/${id}`;
     try {
         const response = await axios.get(URL(id), {
             headers: DOUBAN_API_HEADER,
@@ -95,7 +94,7 @@ async function fetchDoubanVideoInfo(id: string): Promise<Record<string, any>> {
     }
 }
 
-async function fetchDoubanVideoInfoFromApi(id: string): Promise<Record<string, any>>{
+async function fetchDoubanVideoInfoFromApi(id: string): Promise<Record<string, any>> {
     const URL_API = (id: string) => `https://m.douban.com/rexxar/api/v2/movie/${id}`;
     try {
         const response = await axios.get(URL_API(id), {
@@ -181,7 +180,7 @@ function parseDoubanMovieInfo(html: string): Record<string, any> {
  *  根据豆瓣id过去视频详情信息
  * @param id
  */
-async function fetchDoubanVideoInfoById(id: string) : Promise<Record<string, any>>{
+async function fetchDoubanVideoInfoById(id: string): Promise<Record<string, any>> {
     const [res1, res2] = await Promise.all([
         fetchDoubanVideoInfo(id),
         fetchDoubanVideoInfoFromApi(id),

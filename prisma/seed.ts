@@ -1,6 +1,6 @@
-import { PrismaClient } from "@/generated/prisma"
+import {PrismaClient} from "@/generated/prisma"
 import bcrypt from "bcryptjs"
-import { users, customers, invoices, revenue } from "@/app/lib/placeholder-data"
+import {customers, invoices, revenue, users} from "@/app/lib/placeholder-data"
 
 const prisma = new PrismaClient()
 
@@ -8,7 +8,7 @@ async function seedUsers() {
     for (const user of users) {
         const hashedPassword = await bcrypt.hash(user.password, 10)
         await prisma.user_info.upsert({
-            where: { email: user.email },
+            where: {email: user.email},
             update: {},
             create: {
                 username: user.username,
@@ -22,7 +22,7 @@ async function seedUsers() {
 async function seedCustomers() {
     for (const customer of customers) {
         await prisma.customers.upsert({
-            where: { id: customer.id },
+            where: {id: customer.id},
             update: {},
             create: {
                 id: customer.id,
@@ -61,7 +61,7 @@ async function seedInvoices() {
 async function seedRevenue() {
     for (const rev of revenue) {
         await prisma.revenue.upsert({
-            where: { month: rev.month },
+            where: {month: rev.month},
             update: {},
             create: {
                 month: rev.month,

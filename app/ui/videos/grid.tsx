@@ -1,9 +1,15 @@
-import { fetchFilteredVideos } from '@/app/lib/data';
+import {fetchFilteredVideos} from '@/app/lib/data';
 import Image from "next/image";
-import { Video } from "@/app/lib/definitions";
+import {Video} from "@/app/lib/definitions";
 import Link from "next/link";
 
-export default async function VideosGrid({query, category, type, tag, currentPage,}: {query: string; category: string; type: string; tag: string; currentPage: number; }) {
+export default async function VideosGrid({query, category, type, tag, currentPage,}: {
+    query: string;
+    category: string;
+    type: string;
+    tag: string;
+    currentPage: number;
+}) {
     // 获取video信息列表
     const res = await fetchFilteredVideos(query, category, type, tag, currentPage);
     const videos = res?.videos as Video[];
@@ -30,7 +36,7 @@ export default async function VideosGrid({query, category, type, tag, currentPag
                             alt={`${video.title}'s image`}
                             fill
                             className="rounded-t-lg"
-                            style={{ objectFit: 'cover', objectPosition: 'center' }}
+                            style={{objectFit: 'cover', objectPosition: 'center'}}
                         />
                     </div>
 
@@ -41,7 +47,7 @@ export default async function VideosGrid({query, category, type, tag, currentPag
                                 <Link
                                     href={{
                                         pathname: `/dashboard/videos/${video.id}`,
-                                        query: { doubanId: video.uri }
+                                        query: {doubanId: video.uri}
                                     }}
                                     target="_blank"
                                     rel="noopener noreferrer"

@@ -4,28 +4,28 @@ DROP TABLE IF EXISTS video_info CASCADE;
 --- 建表
 CREATE TABLE IF NOT EXISTS video_info
 (
-    id            UUID        NOT NULL DEFAULT gen_random_uuid(),
-    title         VARCHAR(255) NOT NULL,
-    rating        JSONB,
-    pic           JSONB,
-    is_new        BOOLEAN,
-    uri           TEXT,
-    episodes_info TEXT,
-    card_subtitle TEXT,
-    director      JSONB,
-    screenwriter  JSONB,
-    actors        JSONB,
-    category      VARCHAR(128),
-    type          JSONB,
+    id                 UUID         NOT NULL DEFAULT gen_random_uuid(),
+    title              VARCHAR(255) NOT NULL,
+    rating             JSONB,
+    pic                JSONB,
+    is_new             BOOLEAN,
+    uri                TEXT,
+    episodes_info      TEXT,
+    card_subtitle      TEXT,
+    director           JSONB,
+    screenwriter       JSONB,
+    actors             JSONB,
+    category           VARCHAR(128),
+    type               JSONB,
     production_country JSONB,
-    language      varchar(128),
-    release_year  SMALLINT,
-    release_date  TEXT,
-    duration      INT,
-    aka           VARCHAR(255),
-    imdb          VARCHAR(64),
-    created_at    TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at    TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    language           varchar(128),
+    release_year       SMALLINT,
+    release_date       TEXT,
+    duration           INT,
+    aka                VARCHAR(255),
+    imdb               VARCHAR(64),
+    created_at         TIMESTAMPTZ  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at         TIMESTAMPTZ  NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT video_info_pkey PRIMARY KEY (id),
     CONSTRAINT uniq_video_info UNIQUE (title, episodes_info)
 );
@@ -56,16 +56,16 @@ COMMENT ON COLUMN video_info.updated_at IS '记录最后更新时间';
 
 -- 为标题创建索引（加速模糊查询或精确查询）
 CREATE INDEX IF NOT EXISTS idx_video_info_title
-    ON video_info(title);
+    ON video_info (title);
 
 -- 为分类创建索引（加速模糊查询或精确查询）
 CREATE INDEX IF NOT EXISTS idx_video_info_category
-    ON video_info(category);
+    ON video_info (category);
 
 -- 为类型创建索引（JSON 类型，如果 type 是 JSON，需要用表达式索引，假设你查询 JSON 中的具体值）
 CREATE INDEX IF NOT EXISTS idx_video_info_type
-    ON video_info((type::text));
+    ON video_info ((type::text));
 
 -- 为上映年份创建索引
 CREATE INDEX IF NOT EXISTS idx_video_info_release_year
-    ON video_info(release_year);
+    ON video_info (release_year);

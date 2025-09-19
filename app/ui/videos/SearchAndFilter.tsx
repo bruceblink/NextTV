@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { X, Search } from 'lucide-react';
+import {useEffect, useState} from 'react';
+import {useRouter, useSearchParams} from 'next/navigation';
+import {Search, X} from 'lucide-react';
 
 const HOT_TAGS = ['电影', '电视剧', '动漫', '综艺', '动作', '科幻', '喜剧', '爱情'];
 
@@ -42,7 +42,7 @@ export default function SearchAndFilter() {
         const q = searchParams.get('type');
         if (q) setQuery(q);
 
-        const newFilters = { ...selectedFilters };
+        const newFilters = {...selectedFilters};
         Object.keys(FILTERS).forEach(key => {
             const val = searchParams.get(key);
             if (val) newFilters[key] = val;
@@ -76,13 +76,13 @@ export default function SearchAndFilter() {
         const updated = [value, ...recentSearches.filter(v => v !== value)].slice(0, 10);
         saveRecentSearches(updated);
 
-        updateURL({ type: value, ...selectedFilters });
+        updateURL({type: value, ...selectedFilters});
     };
 
     const handleFilterClick = (key: string, value: string) => {
-        const newFilters = { ...selectedFilters, [key]: value };
+        const newFilters = {...selectedFilters, [key]: value};
         setSelectedFilters(newFilters);
-        updateURL({ type: query, ...newFilters });
+        updateURL({type: query, ...newFilters});
     };
 
     const removeSearch = (value: string) => {
@@ -106,7 +106,7 @@ export default function SearchAndFilter() {
                     onClick={() => handleSearch(query)}
                     className="ml-2 bg-blue-500 text-white px-3 py-1 rounded-xl flex items-center text-sm"
                 >
-                    <Search className="w-4 h-4 mr-1" />
+                    <Search className="w-4 h-4 mr-1"/>
                     搜索
                 </button>
             </div>

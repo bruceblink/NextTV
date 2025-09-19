@@ -9,7 +9,7 @@ const DOUBAN_API_HEADER = {
     'Cookie': 'll="108296"; bid=Yy4fcMVaTz0; _vwo_uuid_v2=DEDDB88D38ADE89FE8B880E5924C91791|5776df5806e256a0da98731dd0d2e045; __utma=30149280.1865394102.1758012698.1758012698.1758012698.1; __utmz=30149280.1758012698.1.1.utmcsr=movie.douban.com|utmccn=(referral)|utmcmd=referral|utmcct=/explore; _ga=GA1.1.1487530939.1758012790; _ga_RXNMP372GL=GS2.1.s1758012789$o1$g0$t1758012791$j58$l0$h0; dbcl2="223666985:5oShAVxYVAo"; push_noty_num=0; push_doumail_num=0; frodotk="01cc8c7aad01e62c0565a5700705b284"; talionusr="eyJpZCI6ICIyMjM2NjY5ODUiLCAibmFtZSI6ICJMIn0="; ck=sLqV; frodotk_db="4ceb998985e00eeee6c2cc9c91a02cca"'
 }
 
-const URL =  (id: string) =>`https://movie.douban.com/subject/${id}`;
+const URL = (id: string) => `https://movie.douban.com/subject/${id}`;
 
 const URL_API = (id: string) => `https://m.douban.com/rexxar/api/v2/movie/${id}`;
 
@@ -29,7 +29,7 @@ async function fetchDoubanVideoInfo(id: string): Promise<Record<string, any>> {
     }
 }
 
-async function fetchDoubanVideoInfoFromApi(id: string): Promise<Record<string, any>>{
+async function fetchDoubanVideoInfoFromApi(id: string): Promise<Record<string, any>> {
     try {
         const response = await axios.get(URL_API(id), {
             headers: DOUBAN_API_HEADER,
@@ -104,7 +104,7 @@ function parseDoubanMovieInfo(html: string): Record<string, any> {
                 movieInfo.imdb = value;
                 break;
             default:
-               break;
+                break;
         }
     });
 
@@ -117,6 +117,6 @@ const [res1, res2] = await Promise.all([
 
 ]);
 
-const merged = { ...res1, ...res2 }; // 后者的同名字段会覆盖前者
+const merged = {...res1, ...res2}; // 后者的同名字段会覆盖前者
 console.log(merged);
 
