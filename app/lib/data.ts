@@ -224,7 +224,7 @@ export async function insertVideosToDB(videos: any[]) {
                 uri: video.uri ?? null,
                 episodes_info: video.episodes_info ?? "",
                 card_subtitle: video.card_subtitle ?? null,
-                category: video.category ?? "movie",
+                type: video.type ?? "movie",
 
                 // 详细信息
                 original_title: video.original_title ?? "",
@@ -233,7 +233,6 @@ export async function insertVideosToDB(videos: any[]) {
                 director: toJsonValue(video.director),
                 screenwriter: toJsonValue(video.screenwriter),
                 actors: toJsonValue(video.actors),
-                type: toJsonValue(video.type),
                 production_country: toJsonValue(video.production_country),
                 language: toJsonValue(video.language),
                 release_year: video.release_year ?? null,
@@ -272,7 +271,7 @@ export async function upsertVideoToDB(video: any) {
                 uri: video.uri ?? null,
                 episodes_info: video.episodes_info ?? "",
                 card_subtitle: video.card_subtitle ?? null,
-                category: video.category ?? "movie",
+                type: video.type ?? "movie",
 
                 // 详细信息
                 original_title: video.original_title ?? "",
@@ -281,7 +280,6 @@ export async function upsertVideoToDB(video: any) {
                 director: toJsonValue(video.director),
                 screenwriter: toJsonValue(video.screenwriter),
                 actors: toJsonValue(video.actors),
-                type: toJsonValue(video.type),
                 production_country: toJsonValue(video.production_country),
                 language: toJsonValue(video.language),
                 release_year: video.release_year ?? null,
@@ -297,7 +295,7 @@ export async function upsertVideoToDB(video: any) {
                 ...(video.uri !== undefined && {uri: video.uri}),
                 ...(video.episodes_info !== undefined && {episodes_info: video.episodes_info}),
                 ...(video.card_subtitle !== undefined && {card_subtitle: video.card_subtitle}),
-                ...(video.category !== undefined && {category: video.category}),
+                ...(video.type !== undefined && {type: video.type}),
 
                 // 详细信息
                 ...(video.original_title !== undefined && {original_title: video.original_title}),
@@ -306,7 +304,6 @@ export async function upsertVideoToDB(video: any) {
                 ...(video.director !== undefined && {director: toJsonValue(video.director)}),
                 ...(video.screenwriter !== undefined && {screenwriter: toJsonValue(video.screenwriter)}),
                 ...(video.actors !== undefined && {actors: toJsonValue(video.actors)}),
-                ...(video.type !== undefined && {type: toJsonValue(video.type)}),
                 ...(video.production_country !== undefined && {production_country: toJsonValue(video.production_country)}),
                 ...(video.language !== undefined && {language: toJsonValue(video.language)}),
                 ...(video.release_year !== undefined && {release_year: video.release_year}),

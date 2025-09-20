@@ -105,14 +105,14 @@ model user_info {
 }
 
 model customers {
-  id        String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id        String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String @db.VarChar(255)
   email     String @db.VarChar(255)
   image_url String @db.VarChar(255)
 }
 
 model invoices {
-  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   customer_id String   @db.Uuid
   amount      Int
   status      String   @db.VarChar(255)
@@ -137,11 +137,10 @@ model video_info {
   uri                String?
   episodes_info      String   @default("")
   card_subtitle      String?
+  type               String?  @db.VarChar(128)
   director           Json?
   screenwriter       Json?
   actors             Json?
-  category           String?  @db.VarChar(128)
-  type               Json?
   production_country Json?
   language           Json?
   release_year       Int?     @db.SmallInt
@@ -156,7 +155,6 @@ model video_info {
   genres             Json?
 
   @@unique([title, episodes_info], map: "uniq_video_info")
-  @@index([category], map: "idx_video_info_category")
   @@index([release_year], map: "idx_video_info_release_year")
   @@index([title], map: "idx_video_info_title")
 }
