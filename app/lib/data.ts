@@ -3,7 +3,6 @@ import {CustomerField, CustomersTableType, InvoiceForm, InvoicesTable, LatestInv
 import {formatCurrency} from './utils';
 import prisma from "@/app/lib/prisma";
 import {Prisma} from "@/generated/prisma";
-import {fetchLatestDataFromDouban} from "@/app/lib/douban";
 
 const sql = postgres(process.env.DATABASE_URL!);
 
@@ -336,8 +335,6 @@ export async function fetchFilteredVideos(
     currentPage: number,
 ): Promise<any> {
     const start = (currentPage - 1) * ITEMS_PER_PAGE || 0;
-    // 从豆瓣API获取数据
-    await fetchLatestDataFromDouban(category, _type, currentPage);
     // 从数据库查询
     try {
         const [totalCount, videos] = await prisma.$transaction([
