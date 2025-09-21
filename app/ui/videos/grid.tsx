@@ -27,38 +27,47 @@ export default async function VideosGrid({query, category, type, tag, currentPag
             {videos.map((video, index) => (
                 <div
                     key={index}
-                    className="bg-gray-800 rounded-lg overflow-hidden w-full max-w-[200px] flex flex-col"
+                    className="bg-gray-800 rounded-lg overflow-hidden w-full max-w-[200px] flex flex-col transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg"
                 >
 
-                    <div className="relative w-full aspect-[0.75]">
-                        <Image
-                            src={video.pic.normal}
-                            alt={`${video.title}'s image`}
-                            fill
-                            className="rounded-t-lg"
-                            style={{objectFit: 'cover', objectPosition: 'center'}}
-                        />
+                    <div className="relative w-full aspect-[0.8] cursor-pointer">
+
+                        {video.uri && (
+                            <Link
+                                href={{
+                                    pathname: `/dashboard/videos/${video.id}`,
+                                    query: {doubanId: video.uri}
+                                }}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <Image
+                                    src={video.pic.normal}
+                                    alt={`${video.title}'s image`}
+                                    fill
+                                    className="rounded-t-lg"
+                                    style={{objectFit: 'cover', objectPosition: 'center'}}
+                                />
+                                {video.title}
+                            </Link>
+                        )}
+                        <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded-sm">
+                            {video.rating && (
+                                <>
+                                    <span className="text-sm font-medium text-yellow-400 truncate">★ </span>
+                                    {video.rating.value}
+                                </>
+                            )}
+
+
+                        </div>
                     </div>
 
                     {/* 文字部分 */}
                     <div className="p-3 flex flex-col gap-1">
                         <h3 className="text-lg font-semibold text-white truncate">
-                            {video.uri && (
-                                <Link
-                                    href={{
-                                        pathname: `/dashboard/videos/${video.id}`,
-                                        query: {doubanId: video.uri}
-                                    }}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    {video.title}
-                                </Link>
-                            )}
+                            {video.title}
                         </h3>
-                        {video.rating && (
-                            <h4 className="text-sm font-medium text-yellow-400 truncate">{video.rating.value}</h4>
-                        )}
                         {res.category === "tv" ? (
                             <>
                                 <p className="text-xs text-gray-100 truncate">{video.episodes_info}</p>
@@ -67,7 +76,6 @@ export default async function VideosGrid({query, category, type, tag, currentPag
                         ) : (
                             <p className="text-xs text-gray-100 truncate">{video.card_subtitle}</p>
                         )}
-
                     </div>
                 </div>
             ))}
