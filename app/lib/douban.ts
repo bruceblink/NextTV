@@ -1,191 +1,127 @@
-// 配置超时的常量
-import {insertVideosToDB, ITEMS_PER_PAGE} from "@/app/lib/data";
-import {DOUBAN_API_HEADER, Video} from "@/app/lib/definitions";
-import axios from "axios";
+import axios, {AxiosRequestConfig} from "axios";
 import * as cheerio from "cheerio";
+import {insertVideosToDB, ITEMS_PER_PAGE} from "@/app/lib/data";
+import {Video} from "@/app/lib/definitions";
 
-const REQUEST_TIMEOUT = 10000; // 超时控制（10秒）
+const REQUEST_TIMEOUT = 10000; // 10 秒超时
 
-/**
- *  通过豆瓣 API获取电影资讯
- * @param category 分类: [热门、最新、豆瓣高分，冷门佳作...]等
- * @param type 类型: [华语，欧美...]
- * @param currentPage
- */
-export async function fetchLatestDataFromDouban(
+export const DOUBAN_API_HEADER = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+    'Origin': 'https://movie.douban.com',
+    'Referer': 'https://movie.douban.com/explore?',
+    'Accept': 'application/json, text/plain, */*',
+    'Cookie': 'll="108296"; bid=Yy4fcMVaTz0; _vwo_uuid_v2=DEDDB88D38ADE89FE8B880E5924C91791|5776df5806e256a0da98731dd0d2e045; __utma=30149280.1865394102.1758012698.1758012698.1758012698.1; __utmz=30149280.1758012698.1.1.utmcsr=movie.douban.com|utmccn=(referral)|utmcmd=referral|utmcct=/explore; _ga=GA1.1.1487530939.1758012790; _ga_RXNMP372GL=GS2.1.s1758012789$o1$g0$t1758012791$j58$l0$h0; dbcl2="223666985:5oShAVxYVAo"; push_noty_num=0; push_doumail_num=0; frodotk="01cc8c7aad01e62c0565a5700705b284"; talionusr="eyJpZCI6ICIyMjM2NjY5ODUiLCAibmFtZSI6ICJMIn0="; ck=sLqV; frodotk_db="4ceb998985e00eeee6c2cc9c91a02cca"'
+}
+
+/** -------------------- 类型定义 -------------------- */
+export interface DoubanMovieInfo {
+    original_title?: string;
+    release_year?: number;
+    intro?: string;
+    director?: Array<{ name: string; id?: string }>;
+    language?: string[];
+    actors?: Array<{ name: string; id?: string }>;
+    duration?: number[];
+    production_country?: string[];
+    aka?: string[];
+    screenwriter?: string[];
+    genres?: string[];
+    release_date?: string[];
+    imdb?: string;
+}
+
+/** -------------------- 通用请求 -------------------- */
+async function axiosGetJson<T = any>(url: string, config?: AxiosRequestConfig): Promise<T | null> {
+    try {
+        const res = await axios.get<T>(url, {
+            timeout: REQUEST_TIMEOUT,
+            headers: DOUBAN_API_HEADER,
+            ...config,
+        });
+        return res.data;
+    } catch (err) {
+        console.error(`请求失败: ${url}`, err);
+        return null;
+    }
+}
+
+/** -------------------- 获取最新电影列表并入库 -------------------- */
+export async function fetchAndUpsertDoubanData(
     category: string,
     type?: string,
-    currentPage?: number,
-): Promise<any> {
-    const start = ((currentPage ?? 1) - 1) * ITEMS_PER_PAGE;
-
+    currentPage: number = 1
+) {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
     const url = `https://m.douban.com/rexxar/api/v2/subject/recent_hot/movie?start=${start}&limit=${ITEMS_PER_PAGE}&category=${category}&type=${type}&ck=sLqV`;
-    try {
-        // 通过豆瓣接口获取视频的概要信息
-        const res = await _fetchDoubanData(url);
 
-        if (res && res.items?.length) {
-            const videos = res.items as Video[];
-            // 将uri替换为豆瓣id
-            const final_videos = videos.map(video => {
-                return {...video, uri: video.id};
-            });
-            // 插入数据库
-            await insertVideosToDB(final_videos);
-        }
-    } catch (error) {
-        console.error('请求豆瓣 API 失败:', error);
-        throw new Error('无法获取影片数据');
-    }
+    const data = await axiosGetJson<{ items?: Video[] }>(url);
+    if (!data?.items?.length) return;
+
+    const videos = data.items.map(video => ({...video, uri: video.id}));
+    await insertVideosToDB(videos);
 }
 
-async function _fetchDoubanData(url: string): Promise<any> {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+/** -------------------- 按 ID 获取豆瓣电影信息 -------------------- */
+export async function fetchDoubanVideoInfoById(id: string): Promise<DoubanMovieInfo> {
+    const [htmlData, apiData] = await Promise.all([
+        fetchDoubanVideoInfoHtml(id),
+        fetchDoubanVideoInfoApi(id),
+    ]);
 
-    const fetchOptions: RequestInit = {
-        signal: controller.signal,
-        headers: DOUBAN_API_HEADER,
-    };
-
-    try {
-        const response = await fetch(url, fetchOptions);
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-            console.error(`HTTP 错误！状态码: ${response.status}`);
-            return {};
-        }
-
-        return await response.json();
-    } catch (error) {
-        clearTimeout(timeoutId); // 确保清除超时
-        console.error("豆瓣 API 请求失败: ", error);
-        return {};
-    }
+    // 后者覆盖前者
+    return {...htmlData, ...apiData};
 }
 
-export async function fetchDoubanDataById(douban_id: string): Promise<any> {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+/** -------------------- HTML 解析 -------------------- */
+async function fetchDoubanVideoInfoHtml(id: string): Promise<DoubanMovieInfo> {
+    const url = `https://movie.douban.com/subject/${id}`;
+    const html = await axiosGetJson<string>(url, {responseType: "text"});
+    if (!html) return {};
 
-    try {
-        return await fetchDoubanVideoInfoById(douban_id);
-    } catch (error) {
-        clearTimeout(timeoutId); // 确保清除超时
-        console.error("豆瓣 API 请求失败: ", error);
-        return {};
-    }
-}
-
-/**
- * 获取豆瓣电影信息
- */
-async function fetchDoubanVideoInfo(id: string): Promise<Record<string, any>> {
-    const URL = (id: string) => `https://movie.douban.com/subject/${id}`;
-    try {
-        const response = await axios.get(URL(id), {
-            headers: DOUBAN_API_HEADER,
-        });
-        return parseDoubanMovieInfo(response.data);
-    } catch (err) {
-        console.error("抓取失败:", err);
-        return {};
-    }
-}
-
-async function fetchDoubanVideoInfoFromApi(id: string): Promise<Record<string, any>> {
-    const URL_API = (id: string) => `https://m.douban.com/rexxar/api/v2/movie/${id}`;
-    try {
-        const response = await axios.get(URL_API(id), {
-            headers: DOUBAN_API_HEADER,
-        });
-        const data = response.data;
-
-        const durations = data.durations as string[];
-        const durationsResult = durations.map(dura => {
-            const match = dura.match(/\d+/);
-            return match ? parseInt(match[0], 10) : null;
-        });
-
-        return {
-            original_title: data.original_title,
-            release_year: parseInt(data.year),
-            intro: data.intro,
-            director: data.directors,
-            language: data.languages,
-            actors: data.actors,
-            duration: durationsResult,
-            production_country: data.countries,
-            aka: data.aka
-        }
-    } catch (err) {
-        console.error("抓取失败:", err);
-        return {};
-    }
-}
-
-/**
- * 解析豆瓣 HTML
- */
-function parseDoubanMovieInfo(html: string): Record<string, any> {
     const $ = cheerio.load(html);
+    const movieInfo: DoubanMovieInfo = {};
 
-    const movieInfo: Record<string, any> = {};
+    movieInfo.screenwriter = $('#info span:contains("编剧") a')
+        .map((_, el) => $(el).text().trim())
+        .get();
 
-    // 英文 key 的提取器
-    const extractors: Record<string, () => any> = {
-        // 编剧
-        screenwriter: () =>
-            $('#info span:contains("编剧") .attrs a')
-                .map((_, el) => $(el).text().trim())
-                .get(),
-        // 类型
-        genres: () =>
-            $('span[property="v:genre"]')
-                .map((_, el) => $(el).text().trim())
-                .get(),
-        // 上映日期
-        release_date: () =>
-            $('span[property="v:initialReleaseDate"]')
-                .map((_, el) => $(el).text().trim())
-                .get(),
-    };
+    movieInfo.genres = $('span[property="v:genre"]')
+        .map((_, el) => $(el).text().trim())
+        .get();
 
-    // 基础字段（英文 key）
-    for (const key of Object.keys(extractors)) {
-        movieInfo[key] = extractors[key]();
-    }
+    movieInfo.release_date = $('span[property="v:initialReleaseDate"]')
+        .map((_, el) => $(el).text().trim())
+        .get();
 
-    // info 区域其他字段（IMDb）
     $("#info .pl").each((_, el) => {
         const label = $(el).text().trim().replace(/:$/, "");
-        const textNode = el.next;
-        const value =
-            textNode && textNode.type === "text" ? textNode.data.trim() : "";
-
-        switch (label) {
-            case "IMDb":
-                movieInfo.imdb = value;
-                break;
-            default:
-                break;
-        }
+        const value = el.next?.type === "text" ? el.next.data.trim() : undefined;
+        if (label === "IMDb" && value) movieInfo.imdb = value;
     });
 
     return movieInfo;
 }
 
-/**
- *  根据豆瓣id过去视频详情信息
- * @param id
- */
-async function fetchDoubanVideoInfoById(id: string): Promise<Record<string, any>> {
-    const [res1, res2] = await Promise.all([
-        fetchDoubanVideoInfo(id),
-        fetchDoubanVideoInfoFromApi(id),
+/** -------------------- 移动端 API 获取 -------------------- */
+async function fetchDoubanVideoInfoApi(id: string): Promise<DoubanMovieInfo> {
+    const url = `https://m.douban.com/rexxar/api/v2/movie/${id}`;
+    const data = await axiosGetJson<any>(url);
+    if (!data) return {};
 
-    ]);
-    // 后者的同名字段会覆盖前者
-    return {...res1, ...res2};
+    const durations = (data.durations || []).map((d: string) => {
+        const match = d.match(/\d+/);
+        return match ? parseInt(match[0], 10) : null;
+    }).filter(Boolean) as number[];
+
+    return {
+        original_title: data.original_title,
+        release_year: parseInt(data.year, 10),
+        intro: data.intro,
+        director: data.directors,
+        language: data.languages,
+        actors: data.actors,
+        duration: durations,
+        production_country: data.countries,
+        aka: data.aka,
+    };
 }
