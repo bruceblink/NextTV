@@ -27,7 +27,7 @@ export default async function VideosGrid({query, category, type, tag, currentPag
             {videos.map((video, index) => (
                 <div
                     key={index}
-                    className="bg-gray-800 rounded-lg overflow-hidden w-full max-w-[250px] flex flex-col"
+                    className="bg-gray-800 rounded-lg overflow-hidden w-full max-w-[200px] flex flex-col"
                 >
 
                     <div className="relative w-full aspect-[0.75]">
