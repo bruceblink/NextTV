@@ -3,7 +3,7 @@ import {fetchVideoInfoById, upsertVideoToDB,} from '@/app/lib/data';
 import {notFound} from 'next/navigation';
 import {Metadata} from 'next';
 import Image from "next/image";
-import {fetchDoubanDataById} from "@/app/lib/douban";
+import {fetchDoubanVideoInfoById} from "@/app/lib/douban";
 
 export const metadata: Metadata = {
     title: 'Video Detail',
@@ -20,7 +20,7 @@ export default async function Page({params, searchParams,}:
     // 并发请求
     const [video, videoDouban] = await Promise.all([
         fetchVideoInfoById(id),
-        doubanId ? fetchDoubanDataById(doubanId) : Promise.resolve(null),
+        doubanId ? fetchDoubanVideoInfoById(doubanId) : Promise.resolve(null),
     ]);
 
     // 如果本地数据库没有视频，直接 404
